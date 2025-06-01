@@ -2,16 +2,8 @@
 #include "agk.h"
 
 
-Player::Player()
+Player::Player(const float spawn_x, const float spawn_y)
 {
-	Player(0.0f, 0.0f);
-}
-
-Player::Player(float spawn_x, float spawn_y)
-{
-	xAccel = 0.01f;
-	yAccel = 0.0f;
-
 	xSpeed = 0.0f;
 	ySpeed = 0.0f;
 
@@ -31,11 +23,23 @@ Player::~Player()
 
 void Player::Update()
 {
-	xSpeed += xAccel;
-	ySpeed += yAccel;
+	//Controls
+	if (agk::GetRawKeyState(68))	xSpeed =  4.0f;
+	if (agk::GetRawKeyState(65))	xSpeed = -4.0f;
+	if (agk::GetRawKeyState(83))	ySpeed =  4.0f;
+	if (agk::GetRawKeyState(87))	ySpeed = -4.0f;
 
+	//Movement
 	x += xSpeed;
 	y += ySpeed;
 
+	xSpeed = 0.0f;
+	ySpeed = 0.0f;
+
+
+	//Drawing
 	agk::SetSpritePosition(playerSprite, x, y);
+
+	//Camera
+	agk::SetViewOffset(x - agk::GetWindowWidth() / 2, y - agk::GetWindowHeight() / 2);
 }
