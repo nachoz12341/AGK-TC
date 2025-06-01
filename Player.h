@@ -6,6 +6,8 @@ class Player {
 		Player(float spawn_x, float spawn_y);
 		~Player();
 		void Update();
+		float GetX();
+		float GetY();
 
 	private:
 		float xSpeed;

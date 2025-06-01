@@ -13,6 +13,7 @@ Player::Player(const float spawn_x, const float spawn_y)
 	playerImage = agk::LoadImage("player.png");
 	playerSprite = agk::CreateSprite(playerImage);
 	agk::SetSpritePosition(playerSprite, x, y);
+	agk::SetSpriteDepth(playerSprite,1);
 }
 
 Player::~Player()
@@ -38,8 +39,18 @@ void Player::Update()
 
 
 	//Drawing
-	agk::SetSpritePosition(playerSprite, x, y);
+	agk::SetSpritePosition(playerSprite, x - agk::GetSpriteWidth(playerSprite)/2, y - agk::GetSpriteHeight(playerSprite) / 2);
 
 	//Camera
 	agk::SetViewOffset(x - agk::GetWindowWidth() / 2, y - agk::GetWindowHeight() / 2);
+}
+
+
+float Player::GetX()
+{
+	return x;
+}
+float Player::GetY()
+{
+	return y;
 }

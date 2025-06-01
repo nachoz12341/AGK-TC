@@ -21,13 +21,14 @@ void app::Begin(void)
 	agk::SetFolder("/media");
 
 	world = new World();
-	player = new Player(640.0f, 360.0f);
+	player = new Player(1280.0f, 1280.0f);
 }
 
 int app::Loop (void)
 {
 	agk::Print( agk::ScreenFPS() );
 	player->Update();
+	world->SetOriginChunk(player->GetX() / 16 / 32, player->GetY() / 16 / 32);
 	world->Update();
 	agk::Sync();
 	return 0; // return 1 to close app
