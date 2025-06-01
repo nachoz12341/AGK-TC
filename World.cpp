@@ -1,5 +1,5 @@
 #include "World.h"
-
+#include "agk.h"
 World::World()
 {
 	//Initiate chunk grid
@@ -14,6 +14,9 @@ World::World()
 			chunkGrid[x][y] = new Chunk(x, y);
 		}
 	}
+
+	originX = width/2;
+	originY = height/2;
 }
 
 World::~World()
@@ -28,6 +31,7 @@ World::~World()
 	}
 }
 
+//World tick
 void World::Update()
 {
 	//Tick chunk grid
@@ -40,7 +44,7 @@ void World::Update()
 	}
 }
 
-
+//Should be called after movement in order to determine if we need to generate more chunks
 void World::SetOriginChunk(const int x, const int y)
 {
 	//Only proceed if we changed origin

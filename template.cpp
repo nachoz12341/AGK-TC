@@ -3,6 +3,8 @@
 #include "Player.h"
 #include "World.h"
 
+#include <cmath>
+
 // Namespace
 using namespace AGK;
 
@@ -28,8 +30,9 @@ int app::Loop (void)
 {
 	agk::Print( agk::ScreenFPS() );
 	player->Update();
-	world->SetOriginChunk(player->GetX() / 16 / 32, player->GetY() / 16 / 32);
+	world->SetOriginChunk((int)std::floor(player->GetX() / 16.0f / 32.0f), (int)std::floor(player->GetY() / 16.0f / 32.0f));
 	world->Update();
+
 	agk::Sync();
 	return 0; // return 1 to close app
 }

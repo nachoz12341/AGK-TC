@@ -23,11 +23,13 @@ Chunk::Chunk(const int x, const int y)
 		}
 	}
 
-	//Temporary drawing
-	chunkImage = agk::CreateImageColor(rand()%256, rand() % 256, rand() % 256, 255);
+	GenerateTerrain();
+	chunkImage = GenerateImage();
 	agk::ResizeImage(chunkImage, WIDTH * 16, HEIGHT * 16);
 	chunkSprite = agk::CreateSprite(chunkImage);
-	agk::SetSpritePosition(chunkSprite, chunkX * WIDTH * 16, chunkY * HEIGHT * 16);
+	agk::SetSpritePosition(chunkSprite, (float)(chunkX * WIDTH * 16), (float)(chunkY * HEIGHT * 16));
+	agk::SetSpriteDepth(chunkSprite, 2);
+	agk::SetSpriteOffset(chunkSprite, 0.0f, 0.0f);
 }
 
 Chunk::~Chunk()
@@ -57,4 +59,58 @@ void Chunk::SetBlock(const int x, const int y, const BlockID block)
 void Chunk::SetMetadata(const int x, const int y, const Metadata data)
 {
 	metadata[x][y] = data;
+}
+
+//Fill with random values rn
+void Chunk::GenerateTerrain()
+{
+	for (int x = 0; x < WIDTH;x++)
+	{
+		for (int y = 0; y < HEIGHT;y++)
+		{
+			if((chunkY*HEIGHT)+y >= (sin(((chunkX*WIDTH)+x)/90.0f)*32)+60)	//Temporary sin wave for rolling hills
+				blockID[x][y] = 1;
+		}
+	}
+}
+
+unsigned int Chunk::GenerateImage()
+{
+	unsigned int blockImage = agk::CreateImageColor(0, 255, 0, 255);
+	agk::ResizeImage(blockImage, 16, 16);
+	unsigned int blockSprite = agk::CreateSprite(blockImage);
+	agk::SetSpriteOffset(blockSprite, 0.0f, 0.0f);
+
+	unsigned int renderImage = agk::CreateRenderImage(512, 512, 0, 0);
+
+
+	float prev_x = agk::GetViewOffsetX();
+	float prev_y = agk::GetViewOffsetY();
+	agk::SetViewOffset(0.0f, 0.0f);
+
+	agk::SetRenderToImage(renderImage, 0);
+	agk::SetVirtualResolution(512, 512);
+
+	agk::ClearScreen();
+	
+	for (int x = 0; x < WIDTH;x++)
+	{
+		for (int y = 0; y < HEIGHT;y++)
+		{
+			if (blockID[x][y] > 0)
+			{
+				agk::SetSpritePosition(blockSprite, x * 16.0f, y * 16.0f);
+				agk::DrawSprite(blockSprite);
+			}
+		}
+	}
+
+	agk::SetRenderToScreen();
+	agk::SetVirtualResolution(1280, 720);
+	agk::SetViewOffset(prev_x, prev_y);
+
+	agk::DeleteSprite(blockSprite);
+	agk::DeleteImage(blockImage);
+
+	return renderImage;
 }

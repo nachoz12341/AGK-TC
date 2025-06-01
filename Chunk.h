@@ -25,8 +25,11 @@ class Chunk {
 		unsigned int chunkImage;
 		unsigned int chunkSprite;
 
-		int chunkX;
+		int chunkX;	//Chunk coordinates in world
 		int chunkY;
+		
+		void GenerateTerrain();
+		unsigned int GenerateImage();
 };
 
 #endif
