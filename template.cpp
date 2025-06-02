@@ -15,12 +15,17 @@ World* world;
 void app::Begin(void)
 {
 	agk::SetScreenResolution(1280, 720);
-	agk::SetVirtualResolution(1280, 720);
+	agk::SetVirtualResolution(640, 360);
 	agk::SetClearColor( 151,170,204 ); // light blue
 	agk::SetSyncRate(60,0);
 	agk::SetScissor(0,0,0,0);
 
 	agk::SetFolder("/media");
+
+	//Turn off texture filter
+	agk::SetDefaultMagFilter(0);
+	agk::SetDefaultMinFilter(0);
+	agk::SetGenerateMipmaps(false);
 
 	world = new World();
 	player = new Player(1280.0f, 1280.0f);

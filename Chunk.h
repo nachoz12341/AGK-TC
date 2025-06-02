@@ -2,9 +2,7 @@
 #define _H_CHUNK
 
 #include <vector>
-
-typedef uint8_t BlockID;
-typedef uint8_t Metadata;
+#include "Block.h"
 
 class Chunk {
 	public:

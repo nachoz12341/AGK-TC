@@ -43,7 +43,7 @@ void Player::Update()
 	agk::SetSpritePosition(playerSprite, x, y);
 
 	//Camera
-	agk::SetViewOffset(x - agk::GetWindowWidth() / 2, y - agk::GetWindowHeight() / 2);
+	agk::SetViewOffset(x - (float)agk::GetVirtualWidth() / 2.0f, y - (float)agk::GetVirtualHeight() / 2.0f);
 }
 
 
