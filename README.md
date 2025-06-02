@@ -16,7 +16,11 @@ A 2D sandbox adventure game inspired by **Terraria**, built with **AGK Tier 2 (A
 
 ## 📷 Screenshots
 
-> *(Add screenshots here once available — drag and drop or use Markdown syntax)*
+> ![Screenshot 2025-06-01 203541](https://github.com/user-attachments/assets/8a34667a-3157-43c4-a11d-675e95f46a2e)
+
+
+Pixel Perfection by XSSheep is licensed under a Creative Commons Attribution-Share Alike 4.0 International License.
+https://www.curseforge.com/minecraft/texture-packs/pixel-perfection-freshly-updated
 
 ---
 
