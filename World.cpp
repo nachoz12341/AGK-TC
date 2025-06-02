@@ -107,6 +107,7 @@ void World::SetOriginChunk(const int x, const int y)
 			//Delete old chunks
 			if (tempGrid[chunk_x][chunk_y] != NULL)
 			{
+				//Save data
 				unsigned int chunkData = tempGrid[chunk_x][chunk_y]->Encode();
 				std::string path = "world/" + std::to_string(tempGrid[chunk_x][chunk_y]->GetX()) + "/" + std::to_string(tempGrid[chunk_x][chunk_y]->GetY()) + ".chnk";
 				agk::CreateFileFromMemblock(path.c_str(), chunkData);
@@ -127,7 +128,7 @@ void World::SetOriginChunk(const int x, const int y)
 	originY = y;
 }
 
-Chunk* World::GetChunk(const int x, const int y)
+Chunk* World::GetChunk(const int x, const int y) const
 {
 	int array_x = x - chunkGrid[0][0]->GetX();
 	int array_y = y - chunkGrid[0][0]->GetY();
@@ -155,7 +156,7 @@ void World::SetBlock(const int x, const int y, const BlockID block)
 	}
 }
 
-BlockID World::GetBlock(const int x, const int y)
+BlockID World::GetBlock(const int x, const int y) const
 {
 	int chunk_x = (int)std::floorf((float)x / (float)Chunk::GetWidth());
 	int chunk_y = (int)std::floorf((float)y / (float)Chunk::GetHeight());
@@ -170,4 +171,24 @@ BlockID World::GetBlock(const int x, const int y)
 	}
 
 	return block;
+}
+
+int World::PixelToWorldCoordX(const float x)
+{
+	return (int)std::floorf(x / (int)Block::GetSize());
+}
+
+int World::PixelToWorldCoordY(const float y)
+{
+	return (int)std::floorf(y / Block::GetSize());
+}
+
+int World::WorldCoordToChunkX(int x)
+{
+	return x / Chunk::GetWidth();
+}
+
+int World::WorldCoordToChunkY(int y)
+{
+	return y / Chunk::GetHeight();
 }

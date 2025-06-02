@@ -9,6 +9,7 @@
 using namespace AGK;
 
 app App;
+
 Player* player;
 World* world;
 
@@ -17,7 +18,7 @@ void app::Begin(void)
 	agk::SetWindowSize(1280, 720, false);
 	agk::SetVirtualResolution(640, 360);
 	agk::SetClearColor( 151,170,204 ); // light blue
-	agk::SetSyncRate(60,0);
+	agk::SetSyncRate(60,1);
 	agk::SetScissor(0,0,0,0);
 
 	agk::SetFolder("/media");
@@ -35,7 +36,7 @@ int app::Loop (void)
 {
 	agk::Print( agk::ScreenFPS() );
 	player->Update();
-	world->SetOriginChunk((int)std::floor(player->GetX() / 16.0f / 32.0f), (int)std::floor(player->GetY() / 16.0f / 32.0f));
+	world->SetOriginChunk(World::WorldCoordToChunkX(World::PixelToWorldCoordX(player->GetX())), World::WorldCoordToChunkY(World::PixelToWorldCoordY(player->GetY())));
 	world->Update();
 
 	agk::Sync();
@@ -46,4 +47,5 @@ int app::Loop (void)
 void app::End (void)
 {
 	delete player;
+	delete world;
 }

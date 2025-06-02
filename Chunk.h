@@ -10,13 +10,13 @@ class Chunk {
 		~Chunk();
 		void Tick();
 		void UpdateImage();
-		BlockID GetBlock(int x, int y);
-		Metadata GetMetadata(int x, int y);
+		BlockID GetBlock(int x, int y) const;
+		Metadata GetMetadata(int x, int y) const;
 		void SetBlock(int x, int y, BlockID block);
 		void SetMetadata(int x, int y, Metadata data);
 
-		int GetX();
-		int GetY();
+		int GetX() const;
+		int GetY() const;
 
 		static int GetWidth();
 		static int GetHeight();

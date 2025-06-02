@@ -137,6 +137,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="ScanCodes.h" />
     <ClInclude Include="template.h" />
+    <ClInclude Include="Util.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

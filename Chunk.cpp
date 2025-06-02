@@ -25,7 +25,7 @@ Chunk::Chunk(const int x, const int y)
 		}
 	}
 
-	std::string file_path = "world/"+std::to_string(x)+"/"+std::to_string(y)+".chnk";
+	std::string file_path = "world/"+std::to_string(chunkX)+"/"+std::to_string(chunkY)+".chnk";
 	if (agk::GetFileExists(file_path.c_str()))
 	{
 		unsigned int loadData = agk::CreateMemblockFromFile(file_path.c_str());
@@ -37,7 +37,7 @@ Chunk::Chunk(const int x, const int y)
 
 	chunkImage = GenerateImage();
 	chunkSprite = agk::CreateSprite(chunkImage);
-	agk::SetSpritePosition(chunkSprite, (float)(chunkX * WIDTH * 16), (float)(chunkY * HEIGHT * 16));
+	agk::SetSpritePosition(chunkSprite, (float)(chunkX * WIDTH * Block::GetSize()), (float)(chunkY * HEIGHT * Block::GetSize()));
 	agk::SetSpriteDepth(chunkSprite, 2);
 	agk::SetSpriteOffset(chunkSprite, 0.0f, 0.0f);
 }
@@ -48,12 +48,12 @@ Chunk::~Chunk()
 	agk::DeleteImage(chunkImage);
 }
 
-int Chunk::GetX()
+int Chunk::GetX() const
 {
 	return chunkX;
 }
 
-int Chunk::GetY()
+int Chunk::GetY() const
 {
 	return chunkY;
 }
@@ -81,11 +81,11 @@ void Chunk::UpdateImage()
 	chunkImage = tempImage;
 }
 
-BlockID Chunk::GetBlock(const int x, const int y)
+BlockID Chunk::GetBlock(const int x, const int y) const
 {
 	return blockID[x][y];
 }
-Metadata Chunk::GetMetadata(const int x, const int y)
+Metadata Chunk::GetMetadata(const int x, const int y) const
 {
 	return metadata[x][y];
 }

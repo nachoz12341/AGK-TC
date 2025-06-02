@@ -9,8 +9,8 @@ class Player {
 		Player(World* spawn_world, float spawn_x, float spawn_y);
 		~Player();
 		void Update();
-		float GetX();
-		float GetY();
+		float GetX() const;
+		float GetY() const;
 
 	private:
 		World* world;

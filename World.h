@@ -11,10 +11,15 @@ class World {
 		World();
 		~World();
 		void Update();
-		Chunk* GetChunk(int x, int y);
+		Chunk* GetChunk(int x, int y) const;
 		void SetOriginChunk(int x, int y);
 		void SetBlock(int x, int y, BlockID block);
-		BlockID GetBlock(int x, int y);
+		BlockID GetBlock(int x, int y) const;
+		
+		static int PixelToWorldCoordX(float x);
+		static int PixelToWorldCoordY(float y);
+		static int WorldCoordToChunkX(int x);
+		static int WorldCoordToChunkY(int y);
 
 	private:
 		std::vector<std::vector<Chunk*>> chunkGrid;

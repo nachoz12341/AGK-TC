@@ -2,6 +2,7 @@
 #include "agk.h"
 #include "Block.h"
 #include "ScanCodes.h"
+#include "Util.h"
 #include <cmath>
 
 Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
@@ -61,7 +62,7 @@ void Player::Update()
 
 	if (agk::GetRawMouseRightState() && world->GetBlock(block_x, block_y)==ID::Air)
 	{
-		world->SetBlock(block_x, block_y, ID::Stone);
+		world->SetBlock(block_x, block_y, rand()%ID::Count);
 	}
 	
 
@@ -75,15 +76,18 @@ void Player::Update()
 	agk::SetSpritePosition(highlightSprite, block_x * Block::GetSize(), block_y * Block::GetSize());
 
 	//Camera
-	agk::SetViewOffset(x - (float)agk::GetVirtualWidth() / 2.0f, y - (float)agk::GetVirtualHeight() / 2.0f);
+	float cam_x = Lerp(agk::GetViewOffsetX(), x - (float)agk::GetVirtualWidth()  / 2.0f, 0.5f);
+	float cam_y = Lerp(agk::GetViewOffsetY(), y - (float)agk::GetVirtualHeight() / 2.0f, 0.5f);
+	agk::SetViewOffset(cam_x, cam_y);
+
 }
 
 
-float Player::GetX()
+float Player::GetX() const
 {
 	return x;
 }
-float Player::GetY()
+float Player::GetY() const
 {
 	return y;
 }
