@@ -20,6 +20,9 @@ class Chunk {
 
 		static int GetWidth();
 		static int GetHeight();
+
+		unsigned int Encode();
+		void Decode(unsigned int memblock);
 	private:
 		static const int WIDTH = 32;	//In blocks
 		static const int HEIGHT = 32;

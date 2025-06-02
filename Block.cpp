@@ -14,11 +14,12 @@ void Block::LoadImages()
 	blockImages.push_back(agk::LoadImage("grass_side.png"));
 	blockImages.push_back(agk::LoadImage("dirt.png"));
 	blockImages.push_back(agk::LoadImage("stone.png"));
-
-	for (int image = 0; image < blockImages.size(); image++)
-	{
-		
-	}
+	blockImages.push_back(agk::LoadImage("oak_log.png"));
+	blockImages.push_back(agk::LoadImage("oak_leaves.png"));
+	blockImages.push_back(agk::LoadImage("oak_planks.png"));
+	blockImages.push_back(agk::LoadImage("sand.png"));
+	blockImages.push_back(agk::LoadImage("bricks.png"));
+	blockImages.push_back(agk::LoadImage("oxeye_daisy.png"));
 }
 
 void Block::UnloadImages()

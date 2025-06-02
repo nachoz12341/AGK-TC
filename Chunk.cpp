@@ -2,6 +2,8 @@
 #include "Block.h"
 #include"agk.h"
 
+#include <string>
+
 Chunk::Chunk(const int x, const int y)
 {
 	chunkX = x;
@@ -23,7 +25,16 @@ Chunk::Chunk(const int x, const int y)
 		}
 	}
 
-	GenerateTerrain();
+	std::string file_path = "world/"+std::to_string(x)+"/"+std::to_string(y)+".chnk";
+	if (agk::GetFileExists(file_path.c_str()))
+	{
+		unsigned int loadData = agk::CreateMemblockFromFile(file_path.c_str());
+		Decode(loadData);
+		agk::DeleteMemblock(loadData);
+	}
+	else
+		GenerateTerrain();
+
 	chunkImage = GenerateImage();
 	chunkSprite = agk::CreateSprite(chunkImage);
 	agk::SetSpritePosition(chunkSprite, (float)(chunkX * WIDTH * 16), (float)(chunkY * HEIGHT * 16));
@@ -154,4 +165,34 @@ unsigned int Chunk::GenerateImage()
 	agk::DeleteSprite(blockSprite);
 
 	return renderImage;
+}
+
+unsigned int Chunk::Encode()
+{
+	unsigned int data = agk::CreateMemblock(WIDTH * HEIGHT * 2);
+
+	for(int block_x = 0; block_x < WIDTH; block_x++)
+	{
+		for (int block_y = 0; block_y < HEIGHT; block_y++)
+		{
+			int offset = (block_x * HEIGHT) + block_y;
+			agk::SetMemblockByte(data, offset, blockID[block_x][block_y]);
+			agk::SetMemblockByte(data, offset + 512, metadata[block_x][block_y]);
+		}
+	}
+
+	return data;
+}
+
+void Chunk::Decode(unsigned int memblock)
+{
+	for (int block_x = 0; block_x < WIDTH; block_x++)
+	{
+		for (int block_y = 0; block_y < HEIGHT; block_y++)
+		{
+			int offset = (block_x * HEIGHT) + block_y;
+			blockID[block_x][block_y] = agk::GetMemblockByte(memblock, offset);
+			metadata[block_x][block_y] = agk::GetMemblockByte(memblock, offset + 512);
+		}
+	}
 }

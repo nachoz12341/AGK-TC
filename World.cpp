@@ -2,6 +2,7 @@
 #include "agk.h"
 #include "Block.h"
 #include <cmath>
+#include <string>
 
 World::World()
 {
@@ -106,6 +107,11 @@ void World::SetOriginChunk(const int x, const int y)
 			//Delete old chunks
 			if (tempGrid[chunk_x][chunk_y] != NULL)
 			{
+				unsigned int chunkData = tempGrid[chunk_x][chunk_y]->Encode();
+				std::string path = "world/" + std::to_string(tempGrid[chunk_x][chunk_y]->GetX()) + "/" + std::to_string(tempGrid[chunk_x][chunk_y]->GetY()) + ".chnk";
+				agk::CreateFileFromMemblock(path.c_str(), chunkData);
+				agk::DeleteMemblock(chunkData);
+
 				delete tempGrid[chunk_x][chunk_y];
 			}
 

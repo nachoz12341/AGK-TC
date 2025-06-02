@@ -12,6 +12,12 @@ typedef enum ID {
 	Grass,
 	Dirt,
 	Stone,
+	OakLog,
+	OakLeaves,
+	OakPlanks,
+	Sand,
+	Bricks,
+	Daisy,
 	Count
 }ID;
 
