@@ -123,6 +123,7 @@
   <ItemGroup>
     <ClCompile Include="Block.cpp" />
     <ClCompile Include="Chunk.cpp" />
+    <ClCompile Include="Collider.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="template.cpp" />
@@ -131,6 +132,8 @@
   <ItemGroup>
     <ClInclude Include="Block.h" />
     <ClInclude Include="Chunk.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="FastNoiseLite.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ScanCodes.h" />
     <ClInclude Include="template.h" />

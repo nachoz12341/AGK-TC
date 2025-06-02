@@ -2,6 +2,7 @@
 #define _H_PLAYER
 
 #include "World.h"
+#include "Collider.h"
 
 class Player {
 	public:
@@ -13,9 +14,8 @@ class Player {
 
 	private:
 		World* world;
+		Collider* collider;
 
-		float xSpeed;
-		float ySpeed;
 		float x;
 		float y;
 

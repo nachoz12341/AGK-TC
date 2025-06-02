@@ -14,6 +14,7 @@ class World {
 		Chunk* GetChunk(int x, int y);
 		void SetOriginChunk(int x, int y);
 		void SetBlock(int x, int y, BlockID block);
+		BlockID GetBlock(int x, int y);
 
 	private:
 		std::vector<std::vector<Chunk*>> chunkGrid;

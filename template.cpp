@@ -14,7 +14,7 @@ World* world;
 
 void app::Begin(void)
 {
-	agk::SetScreenResolution(1280, 720);
+	agk::SetWindowSize(1280, 720, false);
 	agk::SetVirtualResolution(640, 360);
 	agk::SetClearColor( 151,170,204 ); // light blue
 	agk::SetSyncRate(60,0);

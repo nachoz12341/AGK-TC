@@ -7,18 +7,16 @@
 Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
 {
 	world = spawn_world;
-
-	xSpeed = 0.0f;
-	ySpeed = 0.0f;
+	collider = new Collider(world, 28.0f, 44.0f);
 
 	x = spawn_x;
 	y = spawn_y;
+	collider->SetPosition(x, y);
 
 	playerImage = agk::LoadImage("player.png");
 	playerSprite = agk::CreateSprite(playerImage);
 	agk::SetSpritePosition(playerSprite, x, y);
 	agk::SetSpriteDepth(playerSprite,1);
-	agk::SetSpriteOffset(playerSprite,agk::GetImageWidth(playerImage) / 2.0f, agk::GetImageHeight(playerImage) / 2.0f);
 
 	highlightImage = agk::LoadImage("highlight.png");
 	highlightSprite = agk::CreateSprite(highlightImage);
@@ -36,11 +34,21 @@ Player::~Player()
 
 void Player::Update()
 {
+	float x_speed = 0.0f;
+	float y_speed = 0.0f;
+
 	//Movement Controls
-	if (agk::GetRawKeyState(AGKEY_D))	xSpeed =  4.0f;
-	if (agk::GetRawKeyState(AGKEY_A))	xSpeed = -4.0f;
-	if (agk::GetRawKeyState(AGKEY_S))	ySpeed =  4.0f;
-	if (agk::GetRawKeyState(AGKEY_W))	ySpeed = -4.0f;
+	if (agk::GetRawKeyState(AGKEY_D))	x_speed =  4.0f;
+	if (agk::GetRawKeyState(AGKEY_A))	x_speed = -4.0f;
+
+	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())	
+			y_speed = -5.25f;
+
+	if (x_speed != 0.0f)
+		collider->SetXSpeed(x_speed);
+
+	if (y_speed != 0.0f)
+		collider->SetYSpeed(y_speed);
 
 	//Aiming
 	int block_x = (int)std::floorf(agk::ScreenToWorldX(agk::GetRawMouseX()) / Block::GetSize());
@@ -58,14 +66,12 @@ void Player::Update()
 	
 
 	//Movement
-	x += xSpeed;
-	y += ySpeed;
-
-	xSpeed = 0.0f;
-	ySpeed = 0.0f;
+	collider->Update();
+	x = collider->GetX();
+	y = collider->GetY();
 
 	//Drawing
-	agk::SetSpritePosition(playerSprite, x, y);
+	agk::SetSpritePosition(playerSprite, x - agk::GetImageWidth(playerImage) / 2.0f, y - agk::GetImageHeight(playerImage) / 2.0f);
 	agk::SetSpritePosition(highlightSprite, block_x * Block::GetSize(), block_y * Block::GetSize());
 
 	//Camera

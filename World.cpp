@@ -148,3 +148,20 @@ void World::SetBlock(const int x, const int y, const BlockID block)
 		updateQueue.push(chunk);
 	}
 }
+
+BlockID World::GetBlock(const int x, const int y)
+{
+	int chunk_x = (int)std::floorf((float)x / (float)Chunk::GetWidth());
+	int chunk_y = (int)std::floorf((float)y / (float)Chunk::GetHeight());
+
+	Chunk* chunk = GetChunk(chunk_x, chunk_y);
+	BlockID block = 0;
+
+	//Only act if we found a chunk
+	if (chunk != NULL)
+	{
+		block = chunk->GetBlock(x - (chunk_x * Chunk::GetWidth()), y - (chunk_y * Chunk::GetHeight()));
+	}
+
+	return block;
+}
