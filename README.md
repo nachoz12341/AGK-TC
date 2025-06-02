@@ -26,7 +26,7 @@ https://www.curseforge.com/minecraft/texture-packs/pixel-perfection-freshly-upda
 
 ## 🛠️ Built With
 
-- **[AppGameKit Tier 2 (C++)](https://www.appgamekit.com/documentation/guides/tier2.htm)** — Cross-platform game development framework
+- **[AppGameKit Tier 2 (C++)](https://www.appgamekit.com/documentation/guides/60_getting_started.htm)** — Cross-platform game development framework
 
 ---
 
@@ -35,4 +35,4 @@ https://www.curseforge.com/minecraft/texture-packs/pixel-perfection-freshly-upda
 ### Prerequisites
 
 - AppGameKit Studio or Classic
-- Visual Studio Community
+- Visual Studio Community (Windows) or Make (Linux)
