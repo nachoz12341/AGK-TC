@@ -61,7 +61,7 @@ void Collider::SetYSpeed(float speed)
 	ySpeed = speed;
 }
 
-void Collider::Update()
+void Collider::Step()
 {
 	ySpeed += gravity;
 

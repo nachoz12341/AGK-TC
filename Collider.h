@@ -16,7 +16,7 @@ class Collider {
 		void SetXSpeed(float speed);
 		void SetYSpeed(float speed);
 
-		void Update();
+		void Step();
 
 	private:
 		typedef enum CollisionAxis {

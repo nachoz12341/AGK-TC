@@ -59,14 +59,14 @@ void Player::Update()
 		world->SetBlock(block_x, block_y, ID::Air);
 	}
 
-	if (agk::GetRawMouseRightState())
+	if (agk::GetRawMouseRightState() && world->GetBlock(block_x, block_y)==ID::Air)
 	{
 		world->SetBlock(block_x, block_y, ID::Stone);
 	}
 	
 
 	//Movement
-	collider->Update();
+	collider->Step();
 	x = collider->GetX();
 	y = collider->GetY();
 
