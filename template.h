@@ -4,8 +4,8 @@
 // Link to GDK libraries
 #include "AGK.h"
 
-#define DEVICE_WIDTH 1024
-#define DEVICE_HEIGHT 768
+#define DEVICE_WIDTH 1280
+#define DEVICE_HEIGHT 720
 #define DEVICE_POS_X 32
 #define DEVICE_POS_Y 32
 #define FULLSCREEN false

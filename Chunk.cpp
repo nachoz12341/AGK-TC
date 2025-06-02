@@ -133,9 +133,15 @@ unsigned int Chunk::GenerateImage()
 
 
 	//store previous settings
+	int prev_vres_x = agk::GetVirtualWidth();
+	int prev_vres_y = agk::GetVirtualHeight();
+
 	float prev_x = agk::GetViewOffsetX();
 	float prev_y = agk::GetViewOffsetY();
 	agk::SetViewOffset(0.0f, 0.0f);
+
+	float prev_zoom = agk::GetViewZoom();
+	agk::SetViewZoom(1.0f);
 
 	//Draw to render image
 	agk::SetRenderToImage(renderImage, 0);
@@ -158,8 +164,9 @@ unsigned int Chunk::GenerateImage()
 
 	//Reset screen settings
 	agk::SetRenderToScreen();
-	agk::SetVirtualResolution(640, 360);
+	agk::SetVirtualResolution(prev_vres_x, prev_vres_y);
 	agk::SetViewOffset(prev_x, prev_y);
+	agk::SetViewZoom(prev_zoom);
 
 	//Cleanup
 	agk::DeleteSprite(blockSprite);

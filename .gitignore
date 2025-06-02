@@ -1,6 +1,8 @@
 /.vs
 /Debug64
+/DebugStudio64
 /Release64
+/ReleaseStudio64
 /Final
 /x64
 /build

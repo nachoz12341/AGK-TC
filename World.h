@@ -24,8 +24,8 @@ class World {
 	private:
 		std::vector<std::vector<Chunk*>> chunkGrid;
 		std::queue<Chunk*> updateQueue;
-		int WIDTH = 3;	//In chunks
-		int HEIGHT = 3;
+		int WIDTH = 5;	//In chunks
+		int HEIGHT = 5;
 
 		int originX; //Controls which chunk is our center chunk
 		int originY;

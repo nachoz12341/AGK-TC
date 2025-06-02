@@ -39,11 +39,11 @@ void Player::Update()
 	float y_speed = 0.0f;
 
 	//Movement Controls
-	if (agk::GetRawKeyState(AGKEY_D))	x_speed =  4.0f;
+	if (agk::GetRawKeyState(AGKEY_D))	x_speed = 4.0f;
 	if (agk::GetRawKeyState(AGKEY_A))	x_speed = -4.0f;
 
-	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())	
-			y_speed = -5.25f;
+	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())
+		y_speed = -5.25f;
 
 	if (x_speed != 0.0f)
 		collider->SetXSpeed(x_speed);
@@ -51,9 +51,22 @@ void Player::Update()
 	if (y_speed != 0.0f)
 		collider->SetYSpeed(y_speed);
 
+	//Zoom
+	float mouse_delta = agk::GetRawMouseWheelDelta();
+	if (mouse_delta != 0)
+	{
+		float current_zoom = agk::GetViewZoom();
+		agk::SetViewZoom(std::min(std::max(current_zoom + mouse_delta * 0.0625f, 1.0f), 4.0f));
+	}
+
+	if (agk::GetRawMouseMiddlePressed())
+	{
+		agk::SetViewZoom(2.0f);	//Reset to base zoom
+	}
+
 	//Aiming
-	int block_x = (int)std::floorf(agk::ScreenToWorldX(agk::GetRawMouseX()) / Block::GetSize());
-	int block_y = (int)std::floorf(agk::ScreenToWorldY(agk::GetRawMouseY()) / Block::GetSize());
+	int block_x = World::PixelToWorldCoordX(agk::ScreenToWorldX(agk::GetRawMouseX()));
+	int block_y = World::PixelToWorldCoordY(agk::ScreenToWorldY(agk::GetRawMouseY()));
 
 	if (agk::GetRawMouseLeftState())
 	{
