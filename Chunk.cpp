@@ -37,9 +37,37 @@ Chunk::~Chunk()
 	agk::DeleteImage(chunkImage);
 }
 
-void Chunk::Update()
+int Chunk::GetX()
+{
+	return chunkX;
+}
+
+int Chunk::GetY()
+{
+	return chunkY;
+}
+
+int Chunk::GetWidth()
+{
+	return WIDTH;
+}
+
+int Chunk::GetHeight()
+{
+	return HEIGHT;
+}
+
+void Chunk::Tick()
 {
 
+}
+
+void Chunk::UpdateImage()
+{
+	int tempImage = GenerateImage();
+	agk::SetSpriteImage(chunkSprite,tempImage);
+	agk::DeleteImage(chunkImage);
+	chunkImage = tempImage;
 }
 
 BlockID Chunk::GetBlock(const int x, const int y)

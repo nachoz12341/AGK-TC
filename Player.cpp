@@ -1,9 +1,12 @@
 #include "Player.h"
 #include "agk.h"
+#include "Block.h"
+#include <cmath>
 
-
-Player::Player(const float spawn_x, const float spawn_y)
+Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
 {
+	world = spawn_world;
+
 	xSpeed = 0.0f;
 	ySpeed = 0.0f;
 
@@ -15,21 +18,43 @@ Player::Player(const float spawn_x, const float spawn_y)
 	agk::SetSpritePosition(playerSprite, x, y);
 	agk::SetSpriteDepth(playerSprite,1);
 	agk::SetSpriteOffset(playerSprite,agk::GetImageWidth(playerImage) / 2.0f, agk::GetImageHeight(playerImage) / 2.0f);
+
+	highlightImage = agk::LoadImage("highlight.png");
+	highlightSprite = agk::CreateSprite(highlightImage);
+	agk::SetSpriteDepth(highlightSprite, 1);
 }
 
 Player::~Player()
 {
 	agk::DeleteSprite(playerSprite);
 	agk::DeleteImage(playerImage);
+
+	agk::DeleteSprite(highlightSprite);
+	agk::DeleteImage(highlightImage);
 }
 
 void Player::Update()
 {
-	//Controls
+	//Movement Controls
 	if (agk::GetRawKeyState(68))	xSpeed =  4.0f;
 	if (agk::GetRawKeyState(65))	xSpeed = -4.0f;
 	if (agk::GetRawKeyState(83))	ySpeed =  4.0f;
 	if (agk::GetRawKeyState(87))	ySpeed = -4.0f;
+
+	//Aiming
+	int block_x = (int)std::floorf(agk::ScreenToWorldX(agk::GetRawMouseX()) / 16.0f);
+	int block_y = (int)std::floorf(agk::ScreenToWorldY(agk::GetRawMouseY()) / 16.0f);
+
+	if (agk::GetRawMouseLeftState())
+	{
+		world->SetBlock(block_x, block_y, ID::Air);
+	}
+
+	if (agk::GetRawMouseRightState())
+	{
+		world->SetBlock(block_x, block_y, ID::Stone);
+	}
+	
 
 	//Movement
 	x += xSpeed;
@@ -38,9 +63,9 @@ void Player::Update()
 	xSpeed = 0.0f;
 	ySpeed = 0.0f;
 
-
 	//Drawing
 	agk::SetSpritePosition(playerSprite, x, y);
+	agk::SetSpritePosition(highlightSprite, block_x * 16.0f, block_y * 16.0f);
 
 	//Camera
 	agk::SetViewOffset(x - (float)agk::GetVirtualWidth() / 2.0f, y - (float)agk::GetVirtualHeight() / 2.0f);

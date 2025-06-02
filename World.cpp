@@ -1,6 +1,7 @@
 #include "World.h"
 #include "agk.h"
 #include "Block.h"
+#include <cmath>
 
 World::World()
 {
@@ -45,8 +46,15 @@ void World::Update()
 	{
 		for (int y = 0; y < HEIGHT;y++)
 		{
-			chunkGrid[x][y]->Update();
+			chunkGrid[x][y]->Tick();
 		}
+	}
+
+	//Check queue if a chunk needs its image rebuilt
+	while (!updateQueue.empty())
+	{
+		updateQueue.front()->UpdateImage();
+		updateQueue.pop();
 	}
 }
 
@@ -111,4 +119,32 @@ void World::SetOriginChunk(const int x, const int y)
 
 	originX = x;
 	originY = y;
+}
+
+Chunk* World::GetChunk(const int x, const int y)
+{
+	int array_x = x - chunkGrid[0][0]->GetX();
+	int array_y = y - chunkGrid[0][0]->GetY();
+
+	Chunk* chunk = NULL;
+
+	if (array_x >= 0 && array_y >= 0 && array_x < WIDTH && array_y < HEIGHT)
+		chunk = chunkGrid[array_x][array_y];
+	return chunk;
+}
+
+//Takes world space coordinates then puts the chunk in the update queue
+void World::SetBlock(const int x, const int y, const BlockID block)
+{
+	int chunk_x = (int)std::floorf((float)x / (float)Chunk::GetWidth());
+	int chunk_y = (int)std::floorf((float)y / (float)Chunk::GetHeight());
+
+	Chunk* chunk = GetChunk(chunk_x, chunk_y);
+
+	//Only act if we found a chunk
+	if (chunk != NULL)
+	{
+		chunk->SetBlock(x - (chunk_x * Chunk::GetWidth()), y - (chunk_y * Chunk::GetHeight()), block);
+		updateQueue.push(chunk);
+	}
 }

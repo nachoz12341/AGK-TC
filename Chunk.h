@@ -8,14 +8,21 @@ class Chunk {
 	public:
 		Chunk(int x, int y);
 		~Chunk();
-		void Update();
+		void Tick();
+		void UpdateImage();
 		BlockID GetBlock(int x, int y);
 		Metadata GetMetadata(int x, int y);
 		void SetBlock(int x, int y, BlockID block);
 		void SetMetadata(int x, int y, Metadata data);
+
+		int GetX();
+		int GetY();
+
+		static int GetWidth();
+		static int GetHeight();
 	private:
-		const int WIDTH = 32;	//In blocks
-		const int HEIGHT = 32;
+		static const int WIDTH = 32;	//In blocks
+		static const int HEIGHT = 32;
 
 		std::vector<std::vector<BlockID>> blockID;
 		std::vector<std::vector<Metadata>> metadata;

@@ -2,6 +2,7 @@
 #define _H_WORLD
 
 #include <vector>
+#include <queue>
 
 #include "Chunk.h"
 
@@ -10,10 +11,13 @@ class World {
 		World();
 		~World();
 		void Update();
+		Chunk* GetChunk(int x, int y);
 		void SetOriginChunk(int x, int y);
+		void SetBlock(int x, int y, BlockID block);
 
 	private:
 		std::vector<std::vector<Chunk*>> chunkGrid;
+		std::queue<Chunk*> updateQueue;
 		int WIDTH = 3;	//In chunks
 		int HEIGHT = 3;
 
