@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "agk.h"
 #include "Block.h"
+#include "ScanCodes.h"
 #include <cmath>
 
 Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
@@ -36,14 +37,14 @@ Player::~Player()
 void Player::Update()
 {
 	//Movement Controls
-	if (agk::GetRawKeyState(68))	xSpeed =  4.0f;
-	if (agk::GetRawKeyState(65))	xSpeed = -4.0f;
-	if (agk::GetRawKeyState(83))	ySpeed =  4.0f;
-	if (agk::GetRawKeyState(87))	ySpeed = -4.0f;
+	if (agk::GetRawKeyState(AGKEY_D))	xSpeed =  4.0f;
+	if (agk::GetRawKeyState(AGKEY_A))	xSpeed = -4.0f;
+	if (agk::GetRawKeyState(AGKEY_S))	ySpeed =  4.0f;
+	if (agk::GetRawKeyState(AGKEY_W))	ySpeed = -4.0f;
 
 	//Aiming
-	int block_x = (int)std::floorf(agk::ScreenToWorldX(agk::GetRawMouseX()) / 16.0f);
-	int block_y = (int)std::floorf(agk::ScreenToWorldY(agk::GetRawMouseY()) / 16.0f);
+	int block_x = (int)std::floorf(agk::ScreenToWorldX(agk::GetRawMouseX()) / Block::GetSize());
+	int block_y = (int)std::floorf(agk::ScreenToWorldY(agk::GetRawMouseY()) / Block::GetSize());
 
 	if (agk::GetRawMouseLeftState())
 	{
@@ -65,7 +66,7 @@ void Player::Update()
 
 	//Drawing
 	agk::SetSpritePosition(playerSprite, x, y);
-	agk::SetSpritePosition(highlightSprite, block_x * 16.0f, block_y * 16.0f);
+	agk::SetSpritePosition(highlightSprite, block_x * Block::GetSize(), block_y * Block::GetSize());
 
 	//Camera
 	agk::SetViewOffset(x - (float)agk::GetVirtualWidth() / 2.0f, y - (float)agk::GetVirtualHeight() / 2.0f);

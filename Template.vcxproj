@@ -132,6 +132,7 @@
     <ClInclude Include="Block.h" />
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="ScanCodes.h" />
     <ClInclude Include="template.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
