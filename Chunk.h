@@ -1,8 +1,11 @@
 #ifndef _H_CHUNK
 #define _H_CHUNK
 
-#include <vector>
 #include "Block.h"
+
+#include <vector>
+#include <queue>
+#include <array>
 
 class Chunk {
 	public:
@@ -10,10 +13,24 @@ class Chunk {
 		~Chunk();
 		void Tick();
 		void UpdateImage();
+		void UpdateShadow();
 		BlockID GetBlock(int x, int y) const;
 		Metadata GetMetadata(int x, int y) const;
+		Light GetLight(int x, int y) const;
+		BackgroundID GetBackground(int x, int y) const;
+
 		void SetBlock(int x, int y, BlockID block);
 		void SetMetadata(int x, int y, Metadata data);
+		void SetLight(int x, int y, Light light);
+		void SetBackground(int x, int y, BackgroundID background);
+
+		bool LightQueueEmpty() const;
+		std::array<int, 2> LightQueuePop();
+		void LightQueuePush(int x, int y);
+
+		bool RemoveLightQueueEmpty() const;
+		std::array<int, 2> RemoveLightQueuePop();
+		void RemoveLightQueuePush(int x, int y);
 
 		int GetX() const;
 		int GetY() const;
@@ -29,15 +46,23 @@ class Chunk {
 
 		std::vector<std::vector<BlockID>> blockID;
 		std::vector<std::vector<Metadata>> metadata;
+		std::vector<std::vector<Light>> light;
+		std::vector<std::vector<BackgroundID>> backgroundID;
+
+		std::queue<std::array<int,2>> lightQueue;
+		std::queue<std::array<int,2>> removeLightQueue;
 
 		unsigned int chunkImage;
+		unsigned int shadowImage;
 		unsigned int chunkSprite;
+
+		unsigned int chunkShader;
 
 		int chunkX;	//Chunk coordinates in world
 		int chunkY;
 		
-		void GenerateTerrain();
 		unsigned int GenerateImage();
+		unsigned int GenerateShadow();
 };
 
 #endif

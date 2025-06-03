@@ -12,40 +12,45 @@ Chunk::Chunk(const int x, const int y)
 	//Initiate chunk datastructures
 	blockID.resize(WIDTH);
 	metadata.resize(WIDTH);
+	light.resize(WIDTH);
+	backgroundID.resize(WIDTH);
 
 	for (int x = 0; x < WIDTH; x++)
 	{
 		blockID[x].resize(HEIGHT);
 		metadata[x].resize(HEIGHT);
+		light[x].resize(HEIGHT);
+		backgroundID[x].resize(HEIGHT);
 
-		for (int y = 0; y < WIDTH; y++)
+		for (int y = 0; y < HEIGHT; y++)
 		{
 			blockID[x][y] = 0;	//Zero out on create
 			metadata[x][y] = 0;
+			light[x][y] = 0;
+			backgroundID[x][y] = 0;
 		}
 	}
-
-	std::string file_path = "world/"+std::to_string(chunkX)+"/"+std::to_string(chunkY)+".chnk";
-	if (agk::GetFileExists(file_path.c_str()))
-	{
-		unsigned int loadData = agk::CreateMemblockFromFile(file_path.c_str());
-		Decode(loadData);
-		agk::DeleteMemblock(loadData);
-	}
-	else
-		GenerateTerrain();
-
-	chunkImage = GenerateImage();
+	
+	chunkImage = agk::CreateImageColor(0,0,0,0);
 	chunkSprite = agk::CreateSprite(chunkImage);
+	agk::SetSpriteSize(chunkSprite, 512.0f, 512.0f);
 	agk::SetSpritePosition(chunkSprite, (float)(chunkX * WIDTH * Block::GetSize()), (float)(chunkY * HEIGHT * Block::GetSize()));
 	agk::SetSpriteDepth(chunkSprite, 2);
 	agk::SetSpriteOffset(chunkSprite, 0.0f, 0.0f);
+
+	shadowImage = agk::CreateImageColor(0, 0, 0, 0);
+	agk::SetSpriteAdditionalImage(chunkSprite, shadowImage, 1);
+
+	chunkShader = agk::LoadSpriteShader("Chunk.ps");
+	agk::SetSpriteShader(chunkSprite, chunkShader);
 }
 
 Chunk::~Chunk()
 {
 	agk::DeleteSprite(chunkSprite);
 	agk::DeleteImage(chunkImage);
+	agk::DeleteImage(shadowImage);
+	agk::DeleteShader(chunkShader);	
 }
 
 int Chunk::GetX() const
@@ -68,6 +73,41 @@ int Chunk::GetHeight()
 	return HEIGHT;
 }
 
+bool Chunk::LightQueueEmpty() const
+{
+	return lightQueue.empty();
+}
+
+std::array<int, 2> Chunk::LightQueuePop()
+{
+	std::array<int, 2> coord = lightQueue.front();
+	lightQueue.pop();
+	return coord;
+}
+
+void Chunk::LightQueuePush(const int x, const int y)
+{
+	lightQueue.push({ x,y });
+}
+
+bool Chunk::RemoveLightQueueEmpty() const
+{
+	return removeLightQueue.empty();
+}
+
+std::array<int, 2> Chunk::RemoveLightQueuePop()
+{
+	std::array<int, 2> coord = removeLightQueue.front();
+	removeLightQueue.pop();
+	return coord;
+}
+
+void Chunk::RemoveLightQueuePush(const int x, const int y)
+{
+	removeLightQueue.push({ x,y });
+}
+
+
 void Chunk::Tick()
 {
 
@@ -79,50 +119,65 @@ void Chunk::UpdateImage()
 	agk::SetSpriteImage(chunkSprite,tempImage);
 	agk::DeleteImage(chunkImage);
 	chunkImage = tempImage;
+
+	UpdateShadow();
+}
+
+void Chunk::UpdateShadow()
+{
+	int tempImage = GenerateShadow();
+	agk::SetSpriteAdditionalImage(chunkSprite, tempImage, 1);
+	agk::DeleteImage(shadowImage);
+	shadowImage = tempImage;
 }
 
 BlockID Chunk::GetBlock(const int x, const int y) const
 {
 	return blockID[x][y];
 }
+
 Metadata Chunk::GetMetadata(const int x, const int y) const
 {
 	return metadata[x][y];
+}
+
+Light Chunk::GetLight(const int x, const int y) const
+{
+	return light[x][y];
+}
+
+
+BackgroundID Chunk::GetBackground(const int x, const int y) const
+{
+	return backgroundID[x][y];
 }
 
 void Chunk::SetBlock(const int x, const int y, const BlockID block)
 {
 	blockID[x][y] = block;
 }
+
 void Chunk::SetMetadata(const int x, const int y, const Metadata data)
 {
 	metadata[x][y] = data;
 }
 
-//Fill with random values rn
-void Chunk::GenerateTerrain()
+void Chunk::SetLight(const int x, const int y, const Light light)
 {
-	for (int x = 0; x < WIDTH;x++)
-	{
-		int threshhold = (int)(sin(((chunkX * WIDTH) + x) / 90.0f) * 32.0f) + 60; //Temporary sin wave for rolling hills
+	this->light[x][y] = light;
+}
 
-		for (int y = 0; y < HEIGHT;y++)
-		{
-			int position = (chunkY * HEIGHT) + y;
-
-			if(position >= threshhold+17)	
-				blockID[x][y] = ID::Stone;
-			else if (position >= threshhold + 1)
-				blockID[x][y] = ID::Dirt;
-			else if (position >= threshhold)
-				blockID[x][y] = ID::Grass;
-
-		}
-	}
+void Chunk::SetBackground(const int x, const int y, const BackgroundID background)
+{
+	backgroundID[x][y] = background;
 }
 
 unsigned int Chunk::GenerateImage()
 {
+	//Create background image
+	unsigned int backgroundImage = agk::CreateImageColor(96, 96, 96, 255);//77, 63, 56, 255);
+	agk::ResizeImage(backgroundImage, 16, 16);
+	
 	//Create dummy sprite
 	unsigned int blockSprite = agk::CreateSprite(0);
 	agk::SetSpriteSize(blockSprite, 16.0f, 16.0f);
@@ -159,6 +214,72 @@ unsigned int Chunk::GenerateImage()
 				agk::SetSpritePosition(blockSprite, x * 16.0f, y * 16.0f);
 				agk::DrawSprite(blockSprite);
 			}
+			else if (backgroundID[x][y] != 0)
+			{
+				agk::SetSpriteImage(blockSprite, backgroundImage);
+				agk::SetSpritePosition(blockSprite, x * 16.0f, y * 16.0f);
+				agk::DrawSprite(blockSprite);
+			}
+			
+		}
+	}
+
+	//Reset screen settings
+	agk::SetRenderToScreen();
+	agk::SetVirtualResolution(prev_vres_x, prev_vres_y);
+	agk::SetViewOffset(prev_x, prev_y);
+	agk::SetViewZoom(prev_zoom);
+
+	//Cleanup
+	agk::DeleteSprite(blockSprite);
+	agk::DeleteImage(backgroundImage);
+
+	return renderImage;
+}
+
+unsigned int Chunk::GenerateShadow()
+{
+	//Create dummy sprite
+	unsigned int blockSprite = agk::CreateSprite(0);
+	agk::SetSpriteSize(blockSprite, 16.0f, 16.0f);
+	agk::SetSpriteOffset(blockSprite, 0.0f, 0.0f);
+
+	//Stores final image
+	unsigned int renderImage = agk::CreateRenderImage(512, 512, 0, 0);
+
+
+	//store previous settings
+	int prev_vres_x = agk::GetVirtualWidth();
+	int prev_vres_y = agk::GetVirtualHeight();
+
+	float prev_x = agk::GetViewOffsetX();
+	float prev_y = agk::GetViewOffsetY();
+	agk::SetViewOffset(0.0f, 0.0f);
+
+	float prev_zoom = agk::GetViewZoom();
+	agk::SetViewZoom(1.0f);
+
+	//Draw to render image
+	agk::SetRenderToImage(renderImage, 0);
+	agk::SetVirtualResolution(512, 512);
+
+	agk::ClearScreen();
+
+	for (int x = 0; x < WIDTH;x++)
+	{
+		for (int y = 0; y < HEIGHT;y++)
+		{
+			agk::SetSpriteColor(blockSprite, 255, 255, 255, 255);	//Light
+
+			if (blockID[x][y] != ID::Air || backgroundID[x][y]!=0)
+			{
+				Light light_level = light[x][y];
+				agk::SetSpriteColor(blockSprite, light_level*17, light_level * 17, light_level * 17, 255);	//Shadow
+			}
+
+
+			agk::SetSpritePosition(blockSprite, x * 16.0f, y * 16.0f);
+			agk::DrawSprite(blockSprite);
 		}
 	}
 
@@ -176,7 +297,7 @@ unsigned int Chunk::GenerateImage()
 
 unsigned int Chunk::Encode()
 {
-	unsigned int data = agk::CreateMemblock(WIDTH * HEIGHT * 2);
+	unsigned int data = agk::CreateMemblock(WIDTH * HEIGHT * 4);
 
 	for(int block_x = 0; block_x < WIDTH; block_x++)
 	{
@@ -184,7 +305,9 @@ unsigned int Chunk::Encode()
 		{
 			int offset = (block_x * HEIGHT) + block_y;
 			agk::SetMemblockByte(data, offset, blockID[block_x][block_y]);
-			agk::SetMemblockByte(data, offset + 512, metadata[block_x][block_y]);
+			agk::SetMemblockByte(data, offset + 1024, metadata[block_x][block_y]);
+			agk::SetMemblockByte(data, offset + 2048, light[block_x][block_y]);
+			agk::SetMemblockByte(data, offset + 3072, backgroundID[block_x][block_y]);
 		}
 	}
 
@@ -199,7 +322,9 @@ void Chunk::Decode(unsigned int memblock)
 		{
 			int offset = (block_x * HEIGHT) + block_y;
 			blockID[block_x][block_y] = agk::GetMemblockByte(memblock, offset);
-			metadata[block_x][block_y] = agk::GetMemblockByte(memblock, offset + 512);
+			metadata[block_x][block_y] = agk::GetMemblockByte(memblock, offset + 1024);
+			light[block_x][block_y] = agk::GetMemblockByte(memblock, offset + 2048);
+			backgroundID[block_x][block_y] = agk::GetMemblockByte(memblock, offset + 3072);
 		}
 	}
 }

@@ -21,8 +21,7 @@ class Collider {
 	private:
 		typedef enum CollisionAxis {
 			xAxis,
-			yAxis,
-			zAxis
+			yAxis
 		}CollisionAxis;
 
 		World* world;
@@ -42,7 +41,6 @@ class Collider {
 
 		bool onGround;
 
-		int Sign(float val);
 		bool DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vector<int>& yCoords, CollisionAxis axis, int& x, int& y);
 };
 

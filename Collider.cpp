@@ -2,6 +2,7 @@
 
 #include "Chunk.h"
 #include "Block.h"
+#include "Util.h"
 
 #include <cmath>
 
@@ -175,11 +176,6 @@ void Collider::Step()
 		yCoords[0][i] = (int)floor(((y - (height / 2.0f) + (height / yBlocks) * i) / Block::GetSize()) - (chunk_y * Chunk::GetHeight()));
 
 	xSpeed *= friction;
-}
-
-int Collider::Sign(float val)
-{
-	return (float(0) < val) - (val < float(0));
 }
 
 bool Collider::DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vector<int>& yCoords, CollisionAxis axis, int& x, int& y)

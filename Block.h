@@ -5,6 +5,8 @@
 
 typedef uint8_t BlockID;
 typedef uint8_t Metadata;
+typedef uint8_t Light;
+typedef uint8_t BackgroundID;
 
 
 typedef enum ID {
@@ -31,6 +33,8 @@ class Block {
 	private:
 		static constexpr float SIZE = 16.0f;	//In pixels
 		static std::vector<unsigned int> blockImages;
+
+
 };
 
 #endif

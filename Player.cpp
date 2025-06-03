@@ -28,32 +28,29 @@ Player::~Player()
 {
 	agk::DeleteSprite(playerSprite);
 	agk::DeleteImage(playerImage);
-
 	agk::DeleteSprite(highlightSprite);
 	agk::DeleteImage(highlightImage);
+	delete collider;
 }
 
 void Player::Update()
 {
 	float x_speed = 0.0f;
-	float y_speed = 0.0f;
 
 	//Movement Controls
 	if (agk::GetRawKeyState(AGKEY_D))	x_speed = 4.0f;
 	if (agk::GetRawKeyState(AGKEY_A))	x_speed = -4.0f;
-
-	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())
-		y_speed = -5.25f;
-
+	
 	if (x_speed != 0.0f)
 		collider->SetXSpeed(x_speed);
 
-	if (y_speed != 0.0f)
-		collider->SetYSpeed(y_speed);
+	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())
+		collider->SetYSpeed(-5.25f);
 
 	//Zoom
 	float mouse_delta = agk::GetRawMouseWheelDelta();
-	if (mouse_delta != 0)
+
+	if (mouse_delta != 0.0f)
 	{
 		float current_zoom = agk::GetViewZoom();
 		agk::SetViewZoom(std::min(std::max(current_zoom + mouse_delta * 0.0625f, 1.0f), 4.0f));
@@ -75,7 +72,7 @@ void Player::Update()
 
 	if (agk::GetRawMouseRightState() && world->GetBlock(block_x, block_y)==ID::Air)
 	{
-		world->SetBlock(block_x, block_y, rand()%ID::Count);
+		world->SetBlock(block_x, block_y, ID::Stone);
 	}
 	
 

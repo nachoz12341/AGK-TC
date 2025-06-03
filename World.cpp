@@ -18,6 +18,7 @@ World::World()
 		for (int y = 0; y < HEIGHT;y++)
 		{
 			chunkGrid[x][y] = new Chunk(x, y);
+			buildQueue.push(chunkGrid[x][y]);
 		}
 	}
 
@@ -28,11 +29,13 @@ World::World()
 World::~World()
 {
 	//Free chunk grid
-	for (int x = 0; x < WIDTH;x++)
+	for (int chunk_x = 0; chunk_x < WIDTH;chunk_x++)
 	{
-		for (int y = 0; y < HEIGHT;y++)
+		for (int chunk_y = 0; chunk_y < HEIGHT;chunk_y++)
 		{
-			delete chunkGrid[x][y];
+			RemoveChunkFromQueue(buildQueue, chunkGrid[chunk_x][chunk_y]);
+			RemoveChunkFromQueue(updateQueue, chunkGrid[chunk_x][chunk_y]);
+			delete chunkGrid[chunk_x][chunk_y];
 		}
 	}
 
@@ -42,6 +45,33 @@ World::~World()
 //World tick
 void World::Update()
 {
+	//Check queue if a chunk needs to be built
+	while (!buildQueue.empty())
+	{
+		Chunk* chunk = buildQueue.front();
+
+		std::string file_path = "world/" + std::to_string(chunk->GetX()) + "/" + std::to_string(chunk->GetY()) + ".chnk";
+		if (agk::GetFileExists(file_path.c_str()))
+		{
+			unsigned int loadData = agk::CreateMemblockFromFile(file_path.c_str());
+			chunk->Decode(loadData);
+			agk::DeleteMemblock(loadData);
+		}
+		else
+		{
+			GenerateTerrain(chunk);
+
+			//if (chunk->GetX() > 0 && chunk->GetX() < WIDTH - 1 && chunk->GetY() > 0 && chunk->GetY() < HEIGHT - 1)
+			{
+				FillLightQueue(chunk);
+				GenerateLight(chunk);
+			}
+		}
+
+		chunk->UpdateImage();
+		buildQueue.pop();
+	}
+
 	//Tick chunk grid
 	for (int x = 0; x < WIDTH;x++)
 	{
@@ -108,11 +138,9 @@ void World::SetOriginChunk(const int x, const int y)
 			if (tempGrid[chunk_x][chunk_y] != NULL)
 			{
 				//Save data
-				unsigned int chunkData = tempGrid[chunk_x][chunk_y]->Encode();
-				std::string path = "world/" + std::to_string(tempGrid[chunk_x][chunk_y]->GetX()) + "/" + std::to_string(tempGrid[chunk_x][chunk_y]->GetY()) + ".chnk";
-				agk::CreateFileFromMemblock(path.c_str(), chunkData);
-				agk::DeleteMemblock(chunkData);
-
+				SaveChunk(tempGrid[chunk_x][chunk_y]);
+				RemoveChunkFromQueue(buildQueue, tempGrid[chunk_x][chunk_y]);
+				RemoveChunkFromQueue(updateQueue, tempGrid[chunk_x][chunk_y]);
 				delete tempGrid[chunk_x][chunk_y];
 			}
 
@@ -120,12 +148,22 @@ void World::SetOriginChunk(const int x, const int y)
 			if (chunkGrid[chunk_x][chunk_y] == NULL)
 			{
 				chunkGrid[chunk_x][chunk_y] = new Chunk(x - (WIDTH / 2) + chunk_x, y - (HEIGHT/ 2) + chunk_y);
+				buildQueue.push(chunkGrid[chunk_x][chunk_y]);
 			}
 		}
 	}
 
 	originX = x;
 	originY = y;
+}
+
+void World::SaveChunk(Chunk* chunk)
+{
+	//Save data
+	unsigned int chunkData = chunk->Encode();
+	std::string path = "world/" + std::to_string(chunk->GetX()) + "/" + std::to_string(chunk->GetY()) + ".chnk";
+	agk::CreateFileFromMemblock(path.c_str(), chunkData);
+	agk::DeleteMemblock(chunkData);
 }
 
 Chunk* World::GetChunk(const int x, const int y) const
@@ -151,7 +189,37 @@ void World::SetBlock(const int x, const int y, const BlockID block)
 	//Only act if we found a chunk
 	if (chunk != NULL)
 	{
-		chunk->SetBlock(x - (chunk_x * Chunk::GetWidth()), y - (chunk_y * Chunk::GetHeight()), block);
+		int block_x = x - (chunk_x * Chunk::GetWidth());
+		int block_y = y - (chunk_y * Chunk::GetHeight());
+
+		chunk->SetBlock(block_x, block_y, block);
+
+		//If placing a new block
+		if (block != ID::Air)
+		{
+			chunk->RemoveLightQueuePush(block_x, block_y);
+			RemoveLight(chunk);
+			GenerateLight(chunk);
+
+			//If placing a torch
+			//chunk->SetLight(block_x, block_y, 15);
+			//chunk->LightQueuePush(block_x, block_y);
+			//GenerateLight(chunk);
+		}
+		else //breaking a block
+		{
+			if (chunk->GetBackground(block_x, block_y) == 0)
+				chunk->SetLight(block_x, block_y, 15);
+			else
+			{
+				Light new_light = std::max(GetLight(x + 1, y), std::max(GetLight(x - 1, y), std::max(GetLight(x , y + 1), GetLight(x, y - 1))));
+				new_light = std::max(new_light - 1, 0);
+				chunk->SetLight(block_x, block_y, new_light);
+			}
+
+			chunk->LightQueuePush(block_x, block_y);
+			GenerateLight(chunk);
+		}
 		updateQueue.push(chunk);
 	}
 }
@@ -173,9 +241,26 @@ BlockID World::GetBlock(const int x, const int y) const
 	return block;
 }
 
+Light World::GetLight(const int x, const int y) const
+{
+	int chunk_x = (int)std::floorf((float)x / (float)Chunk::GetWidth());
+	int chunk_y = (int)std::floorf((float)y / (float)Chunk::GetHeight());
+
+	Chunk* chunk = GetChunk(chunk_x, chunk_y);
+	Light light = 0;
+
+	//Only act if we found a chunk
+	if (chunk != NULL)
+	{
+		light = chunk->GetLight(x - (chunk_x * Chunk::GetWidth()), y - (chunk_y * Chunk::GetHeight()));
+	}
+
+	return light;
+}
+
 int World::PixelToWorldCoordX(const float x)
 {
-	return (int)std::floorf(x / (int)Block::GetSize());
+	return (int)std::floorf(x / Block::GetSize());
 }
 
 int World::PixelToWorldCoordY(const float y)
@@ -191,4 +276,150 @@ int World::WorldCoordToChunkX(int x)
 int World::WorldCoordToChunkY(int y)
 {
 	return y / Chunk::GetHeight();
+}
+
+//Chunk generation steps
+void World::GenerateTerrain(Chunk* chunk)
+{
+	for (int x = 0; x < Chunk::GetWidth();x++)
+	{
+		int threshhold = (int)(sin(((chunk->GetX() * Chunk::GetWidth()) + x) / 90.0f) * 32.0f) + 60; //Temporary sin wave for rolling hills
+
+		for (int y = 0; y < Chunk::GetHeight();y++)
+		{
+			int position = (chunk->GetY() * Chunk::GetHeight()) + y;
+
+			BlockID block = ID::Air;
+
+			if (position >= threshhold + 17)
+				block = ID::Stone;
+			else if (position >= threshhold + 1)
+				block = ID::Dirt;
+			else if (position >= threshhold)
+				block = ID::Grass;
+
+			if (block != ID::Air)
+			{
+				chunk->SetBlock(x, y, block);
+				chunk->SetBackground(x, y, 1);
+			}
+
+		}
+	}
+}
+
+void World::FillLightQueue(Chunk* chunk)
+{
+	//Iterate over chunk and add light to all sources
+	for (int block_x = 0; block_x < Chunk::GetWidth(); block_x++)
+	{
+		for (int block_y = 0; block_y < Chunk::GetHeight(); block_y++)
+		{
+			if (chunk->GetBlock(block_x, block_y) == ID::Air && chunk->GetBackground(block_x, block_y) == 0)
+			{
+				chunk->SetLight(block_x, block_y, 15);
+				chunk->LightQueuePush(block_x, block_y);
+			}
+		}
+	}
+}
+
+void World::GenerateLight(Chunk* chunk)
+{
+	// Direction offsets: right, left, down, up
+	const int dx[4] = { 1, -1, 0, 0 };
+	const int dy[4] = { 0, 0, 1, -1 };
+
+	while (!chunk->LightQueueEmpty())
+	{
+		std::array<int, 2> coord = chunk->LightQueuePop();
+		int block_x = coord[0];
+		int block_y = coord[1];
+
+		Light current_light = chunk->GetLight(block_x, block_y);
+
+		if (current_light == 0)
+			continue;
+
+		for (int dir = 0; dir < 4; ++dir)
+		{
+			int nx = block_x + dx[dir];
+			int ny = block_y + dy[dir];
+
+			if (nx < 0 || nx >= Chunk::GetWidth() || ny < 0 || ny >= Chunk::GetHeight())
+				continue;
+
+			Light new_light = current_light;
+			if (chunk->GetBlock(nx, ny) != ID::Air)
+				new_light = std::max(0, new_light - 2);
+			else if (chunk->GetBackground(nx, ny) != 0)
+				new_light = std::max(0, new_light - 1);
+
+			if (chunk->GetLight(nx, ny) < new_light)
+			{
+				chunk->SetLight(nx, ny, new_light);
+				chunk->LightQueuePush(nx, ny);
+			}
+		}
+	}
+}
+
+void World::RemoveLight(Chunk* chunk)
+{
+	// Direction offsets: right, left, down, up
+	const int dx[4] = { 1, -1, 0, 0 };
+	const int dy[4] = { 0, 0, 1, -1 };
+
+	while (!chunk->RemoveLightQueueEmpty())
+	{
+		std::array<int, 2> coord = chunk->RemoveLightQueuePop();
+		int block_x = coord[0];
+		int block_y = coord[1];
+
+		Light current_light = chunk->GetLight(block_x, block_y);
+		chunk->SetLight(block_x, block_y, 0);
+
+		if (current_light == 0)
+			continue;
+
+		for (int dir = 0; dir < 4; ++dir)
+		{
+			int nx = block_x + dx[dir];
+			int ny = block_y + dy[dir];
+
+			if (nx < 0 || nx >= Chunk::GetWidth() || ny < 0 || ny >= Chunk::GetHeight())
+				continue;
+
+			Light neighbor_light = chunk->GetLight(nx, ny);
+			Light new_light = current_light;
+
+			// Different rules depending on area we're traveling
+			if (chunk->GetBlock(nx, ny) != ID::Air)
+				new_light = std::min(15, new_light + 2);
+			else if (chunk->GetBackground(nx, ny) != 0)
+				new_light = std::min(15, new_light + 1);
+
+			// Continue removing
+			if (neighbor_light != 0 && neighbor_light < new_light)
+			{
+				chunk->RemoveLightQueuePush(nx, ny);
+			}
+			else if (neighbor_light >= new_light)
+			{
+				chunk->LightQueuePush(nx, ny); // Stop removing and re-spread light
+			}
+		}
+	}
+}
+
+template<typename T>
+void World::RemoveChunkFromQueue(std::queue<T*>& q, T* ptr)
+{
+	std::queue<T*> temp;
+	while (!q.empty()) {
+		if (q.front() != ptr)
+			temp.push(q.front());
+		q.pop();
+	}
+	std::swap(q, temp);
 }
