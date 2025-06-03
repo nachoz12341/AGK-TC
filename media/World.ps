@@ -5,7 +5,6 @@ varying mediump vec2 uvVarying;
 varying mediump vec4 colorVarying;
 
 uniform vec3 ambientColor;
-//uniform float blurSize;
 uniform vec2 agk_resolution;
 
 void main()
@@ -15,15 +14,15 @@ void main()
     if(texColor.a<0.5)
         discard;
 
-    float blurSize = 15.0;
+    float blurSize = 8.0;
     vec2 pixelSize = vec2(1.0)/agk_resolution;
     
-    vec4 finalColor = texture2D(texture1, uvVarying);
-    finalColor += texture2D(texture1, uvVarying + vec2(0.0, -blurSize) * pixelSize);
-    finalColor += texture2D(texture1, uvVarying + vec2(0.0, blurSize) * pixelSize);
-    finalColor += texture2D(texture1, uvVarying + vec2(-blurSize, 0.0) * pixelSize);
-    finalColor += texture2D(texture1, uvVarying + vec2(blurSize, 0.0) * pixelSize);
-    finalColor /= 5.0;
+    vec4 shadowColor = texture2D(texture1, uvVarying);
+    shadowColor += texture2D(texture1, uvVarying + vec2(0.0, -blurSize) * pixelSize);
+    shadowColor += texture2D(texture1, uvVarying + vec2(0.0,  blurSize) * pixelSize);
+    shadowColor += texture2D(texture1, uvVarying + vec2(-blurSize, 0.0) * pixelSize);
+    shadowColor += texture2D(texture1, uvVarying + vec2( blurSize, 0.0) * pixelSize);
+    shadowColor /= 5.0;
 
-    gl_FragColor = texColor * finalColor;
+    gl_FragColor = texColor * shadowColor;
 }

@@ -16,8 +16,11 @@ Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
 
 	playerImage = agk::LoadImage("player.png");
 	playerSprite = agk::CreateSprite(playerImage);
+	playerShader = agk::LoadSpriteShader("Player.ps");
+	agk::SetSpritePhysicsOff(playerSprite);	//Don't need built in physics
 	agk::SetSpritePosition(playerSprite, x, y);
 	agk::SetSpriteDepth(playerSprite,1);
+	agk::SetSpriteShader(playerSprite, playerShader);
 
 	highlightImage = agk::LoadImage("highlight.png");
 	highlightSprite = agk::CreateSprite(highlightImage);
@@ -28,6 +31,7 @@ Player::~Player()
 {
 	agk::DeleteSprite(playerSprite);
 	agk::DeleteImage(playerImage);
+	agk::DeleteShader(playerShader);
 	agk::DeleteSprite(highlightSprite);
 	agk::DeleteImage(highlightImage);
 	delete collider;
@@ -90,6 +94,10 @@ void Player::Update()
 	float cam_y = Lerp(agk::GetViewOffsetY(), y - (float)agk::GetVirtualHeight() / 2.0f, 0.5f);
 	agk::SetViewOffset(cam_x, cam_y);
 
+	
+	//Get the shadowmap to darken the player
+	agk::SetSpriteAdditionalImage(playerSprite, world->GetShadowImage(), 1);
+	agk::SetShaderConstantByName(playerShader, "playerOffset", agk::WorldToScreenX(x) - agk::GetSpriteOffsetX(playerSprite), agk::WorldToScreenY(y) - agk::GetSpriteOffsetY(playerSprite), 0, 0);
 }
 
 

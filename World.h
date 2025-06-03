@@ -18,6 +18,9 @@ class World {
 		BlockID GetBlock(int x, int y) const;
 		Light GetLight(int x, int y) const;
 		
+		unsigned int GetTerrainImage() const { return terrainImage; }
+		unsigned int GetShadowImage() const { return shadowImage; }
+
 		static int PixelToWorldCoordX(float x);
 		static int PixelToWorldCoordY(float y);
 		static int WorldCoordToChunkX(int x);
@@ -55,7 +58,7 @@ class World {
 		void RemoveChunkFromQueue(std::queue<T*>& q, T* ptr);
 		void SaveChunk(Chunk* chunk);
 
-		void RenderImage(RenderImageType type);	
+		void RenderChunksToImage(RenderImageType type);	
 };
 
 

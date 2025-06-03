@@ -21,9 +21,10 @@ class Player {
 
 		unsigned int playerImage;
 		unsigned int playerSprite;
+		unsigned int playerShader;
 
 		unsigned int highlightImage;
-		unsigned int highlightSprite;
+		unsigned int highlightSprite;		
 };
 
 #endif 
