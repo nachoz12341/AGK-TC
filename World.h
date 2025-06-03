@@ -23,7 +23,15 @@ class World {
 		static int WorldCoordToChunkX(int x);
 		static int WorldCoordToChunkY(int y);
 
+		void Render();
+
 	private:
+		enum class RenderImageType
+		{
+			Terrain,
+			Shadow
+		};
+
 		std::vector<std::vector<Chunk*>> chunkGrid;
 		std::queue<Chunk*> buildQueue;
 		std::queue<Chunk*> updateQueue;
@@ -32,6 +40,11 @@ class World {
 
 		int originX; //Controls which chunk is our center chunk
 		int originY;
+
+		unsigned int terrainImage;
+		unsigned int shadowImage;
+		unsigned int worldSprite;
+		unsigned int worldShader;
 
 		void GenerateTerrain(Chunk* chunk);
 		void FillLightQueue(Chunk* chunk);
@@ -42,6 +55,7 @@ class World {
 		void RemoveChunkFromQueue(std::queue<T*>& q, T* ptr);
 		void SaveChunk(Chunk* chunk);
 
+		void RenderImage(RenderImageType type);	
 };
 
 

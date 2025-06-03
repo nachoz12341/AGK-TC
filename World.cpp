@@ -24,6 +24,14 @@ World::World()
 
 	originX = WIDTH/2;
 	originY = HEIGHT/2;
+
+	terrainImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
+	shadowImage  = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
+	worldSprite = agk::CreateSprite(terrainImage);
+	agk::SetSpriteAdditionalImage(worldSprite, shadowImage, 1);
+
+	worldShader = agk::LoadSpriteShader("World.ps");
+	agk::SetSpriteShader(worldSprite, worldShader);
 }
 
 World::~World()
@@ -40,6 +48,11 @@ World::~World()
 	}
 
 	Block::UnloadImages();
+	
+	agk::DeleteSprite(worldSprite);
+	agk::DeleteImage(terrainImage);
+	agk::DeleteImage(shadowImage);
+	agk::DeleteShader(worldShader);
 }
 
 //World tick
@@ -422,4 +435,57 @@ void World::RemoveChunkFromQueue(std::queue<T*>& q, T* ptr)
 		q.pop();
 	}
 	std::swap(q, temp);
+}
+
+void World::Render()
+{
+	RenderImage(RenderImageType::Terrain);
+	RenderImage(RenderImageType::Shadow);
+
+	agk::SetSpritePosition(worldSprite, agk::GetViewOffsetX(), agk::GetViewOffsetY());
+}
+
+void World::RenderImage(RenderImageType type)
+{
+	//Create dummy sprite
+	unsigned int terrainSprite = agk::CreateSprite(0);
+	agk::SetSpriteSize(terrainSprite, 512.0f, 512.0f);
+	agk::SetSpriteOffset(terrainSprite, 0.0f, 0.0f);
+
+	float prev_x = agk::GetViewOffsetX();
+	float prev_y = agk::GetViewOffsetY();
+	agk::SetViewOffset(0.0f, 0.0f);
+
+	float prev_zoom = agk::GetViewZoom();
+	agk::SetViewZoom(1.0f);
+
+	//Draw to render image
+	unsigned int renderImage = (type == RenderImageType::Terrain) ? terrainImage : shadowImage;
+	agk::SetRenderToImage(renderImage, 0);
+
+	agk::ClearScreen();
+
+	for (int x = 0; x < WIDTH;x++)
+	{
+		for (int y = 0; y < HEIGHT;y++)
+		{
+			Chunk* chunk = chunkGrid[x][y];
+			agk::SetSpritePosition(terrainSprite, (float)(chunk->GetX() * Chunk::GetWidth() * Block::GetSize())-prev_x, (float)(chunk->GetY() * Chunk::GetHeight() * Block::GetSize())-prev_y);
+
+			if (agk::GetSpriteInScreen(terrainSprite))
+			{
+				unsigned int img = (type == RenderImageType::Terrain) ? chunk->GetTerrainImage() : chunk->GetShadowImage();
+				agk::SetSpriteImage(terrainSprite, img);
+				agk::DrawSprite(terrainSprite);
+			}
+		}
+	}
+
+	//Reset screen settings
+	agk::SetRenderToScreen();
+	agk::SetViewOffset(prev_x, prev_y);
+	agk::SetViewZoom(prev_zoom);
+
+	//Cleanup
+	agk::DeleteSprite(terrainSprite);
 }

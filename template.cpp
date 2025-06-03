@@ -22,6 +22,7 @@ void app::Begin(void)
 	agk::SetClearColor( 151,170,204 ); // light blue
 	agk::SetSyncRate(60,1);
 	agk::SetScissor(0,0,0,0);
+	agk::SetPrintSize(16.0f);
 
 	agk::SetFolder("/media");
 
@@ -40,6 +41,7 @@ int app::Loop (void)
 	player->Update();
 	world->SetOriginChunk(World::WorldCoordToChunkX(World::PixelToWorldCoordX(player->GetX())), World::WorldCoordToChunkY(World::PixelToWorldCoordY(player->GetY())));
 	world->Update();
+	world->Render();
 
 	agk::Sync();
 	return 0; // return 1 to close app

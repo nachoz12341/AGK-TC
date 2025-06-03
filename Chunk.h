@@ -38,6 +38,9 @@ class Chunk {
 		static int GetWidth();
 		static int GetHeight();
 
+		unsigned int GetTerrainImage() const;
+		unsigned int GetShadowImage() const;
+
 		unsigned int Encode();
 		void Decode(unsigned int memblock);
 	private:
@@ -52,17 +55,14 @@ class Chunk {
 		std::queue<std::array<int,2>> lightQueue;
 		std::queue<std::array<int,2>> removeLightQueue;
 
-		unsigned int chunkImage;
+		unsigned int terrainImage;
 		unsigned int shadowImage;
-		unsigned int chunkSprite;
-
-		unsigned int chunkShader;
 
 		int chunkX;	//Chunk coordinates in world
 		int chunkY;
 		
-		unsigned int GenerateImage();
-		unsigned int GenerateShadow();
+		void GenerateImage();
+		void GenerateShadow();
 };
 
 #endif

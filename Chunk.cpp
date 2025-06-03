@@ -31,26 +31,14 @@ Chunk::Chunk(const int x, const int y)
 		}
 	}
 	
-	chunkImage = agk::CreateImageColor(0,0,0,0);
-	chunkSprite = agk::CreateSprite(chunkImage);
-	agk::SetSpriteSize(chunkSprite, 512.0f, 512.0f);
-	agk::SetSpritePosition(chunkSprite, (float)(chunkX * WIDTH * Block::GetSize()), (float)(chunkY * HEIGHT * Block::GetSize()));
-	agk::SetSpriteDepth(chunkSprite, 2);
-	agk::SetSpriteOffset(chunkSprite, 0.0f, 0.0f);
-
-	shadowImage = agk::CreateImageColor(0, 0, 0, 0);
-	agk::SetSpriteAdditionalImage(chunkSprite, shadowImage, 1);
-
-	chunkShader = agk::LoadSpriteShader("Chunk.ps");
-	agk::SetSpriteShader(chunkSprite, chunkShader);
+	terrainImage = agk::CreateRenderImage(512, 512, 0, 0);
+	shadowImage = agk::CreateRenderImage(512, 512, 0, 0);
 }
 
 Chunk::~Chunk()
 {
-	agk::DeleteSprite(chunkSprite);
-	agk::DeleteImage(chunkImage);
+	agk::DeleteImage(terrainImage);
 	agk::DeleteImage(shadowImage);
-	agk::DeleteShader(chunkShader);	
 }
 
 int Chunk::GetX() const
@@ -115,20 +103,13 @@ void Chunk::Tick()
 
 void Chunk::UpdateImage()
 {
-	int tempImage = GenerateImage();
-	agk::SetSpriteImage(chunkSprite,tempImage);
-	agk::DeleteImage(chunkImage);
-	chunkImage = tempImage;
-
+	GenerateImage();
 	UpdateShadow();
 }
 
 void Chunk::UpdateShadow()
 {
-	int tempImage = GenerateShadow();
-	agk::SetSpriteAdditionalImage(chunkSprite, tempImage, 1);
-	agk::DeleteImage(shadowImage);
-	shadowImage = tempImage;
+	GenerateShadow();
 }
 
 BlockID Chunk::GetBlock(const int x, const int y) const
@@ -146,10 +127,19 @@ Light Chunk::GetLight(const int x, const int y) const
 	return light[x][y];
 }
 
-
 BackgroundID Chunk::GetBackground(const int x, const int y) const
 {
 	return backgroundID[x][y];
+}
+
+unsigned int Chunk::GetTerrainImage() const
+{
+	return terrainImage;
+}
+
+unsigned int Chunk::GetShadowImage() const
+{
+	return shadowImage;
 }
 
 void Chunk::SetBlock(const int x, const int y, const BlockID block)
@@ -172,7 +162,7 @@ void Chunk::SetBackground(const int x, const int y, const BackgroundID backgroun
 	backgroundID[x][y] = background;
 }
 
-unsigned int Chunk::GenerateImage()
+void Chunk::GenerateImage()
 {
 	//Create background image
 	unsigned int backgroundImage = agk::CreateImageColor(96, 96, 96, 255);//77, 63, 56, 255);
@@ -182,10 +172,6 @@ unsigned int Chunk::GenerateImage()
 	unsigned int blockSprite = agk::CreateSprite(0);
 	agk::SetSpriteSize(blockSprite, 16.0f, 16.0f);
 	agk::SetSpriteOffset(blockSprite, 0.0f, 0.0f);
-
-	//Stores final image
-	unsigned int renderImage = agk::CreateRenderImage(512, 512, 0, 0);
-
 
 	//store previous settings
 	int prev_vres_x = agk::GetVirtualWidth();
@@ -199,7 +185,7 @@ unsigned int Chunk::GenerateImage()
 	agk::SetViewZoom(1.0f);
 
 	//Draw to render image
-	agk::SetRenderToImage(renderImage, 0);
+	agk::SetRenderToImage(terrainImage, 0);
 	agk::SetVirtualResolution(512, 512);
 
 	agk::ClearScreen();
@@ -233,11 +219,9 @@ unsigned int Chunk::GenerateImage()
 	//Cleanup
 	agk::DeleteSprite(blockSprite);
 	agk::DeleteImage(backgroundImage);
-
-	return renderImage;
 }
 
-unsigned int Chunk::GenerateShadow()
+void Chunk::GenerateShadow()
 {
 	//Create dummy sprite
 	unsigned int blockSprite = agk::CreateSprite(0);
@@ -260,7 +244,7 @@ unsigned int Chunk::GenerateShadow()
 	agk::SetViewZoom(1.0f);
 
 	//Draw to render image
-	agk::SetRenderToImage(renderImage, 0);
+	agk::SetRenderToImage(shadowImage, 0);
 	agk::SetVirtualResolution(512, 512);
 
 	agk::ClearScreen();
@@ -291,8 +275,6 @@ unsigned int Chunk::GenerateShadow()
 
 	//Cleanup
 	agk::DeleteSprite(blockSprite);
-
-	return renderImage;
 }
 
 unsigned int Chunk::Encode()
