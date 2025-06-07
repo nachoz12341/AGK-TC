@@ -26,13 +26,13 @@ World::World()
 	originY = HEIGHT/2;
 
 	terrainImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
-	shadowImage  = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
+	shadowImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
 	worldSprite = agk::CreateSprite(terrainImage);
 	agk::SetSpritePhysicsOff(worldSprite);	//Don't need built in physics
-	agk::SetSpriteAdditionalImage(worldSprite, shadowImage, 1);
 
 	worldShader = agk::LoadSpriteShader("World.ps");
 	agk::SetSpriteShader(worldSprite, worldShader);
+	agk::SetSpriteAdditionalImage(worldSprite, shadowImage, 1);
 }
 
 World::~World()
