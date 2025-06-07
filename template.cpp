@@ -33,7 +33,7 @@ void app::Begin(void)
 	agk::SetGenerateMipmaps(false);
 
 	world = new World();
-	player = new Player(world, 1280.0f, 1280.0f);
+	player = new Player(world, 1792.0f, 1792.0f);
 }
 
 int app::Loop (void)

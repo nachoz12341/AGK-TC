@@ -9,6 +9,8 @@ Chunk::Chunk(const int x, const int y)
 	chunkX = x;
 	chunkY = y;
 
+	edgeChunk = false;
+
 	//Initiate chunk datastructures
 	blockID.resize(WIDTH);
 	metadata.resize(WIDTH);
@@ -51,6 +53,11 @@ int Chunk::GetY() const
 	return chunkY;
 }
 
+bool Chunk::GetEdgeChunk() const
+{
+	return edgeChunk;
+}
+
 int Chunk::GetWidth()
 {
 	return WIDTH;
@@ -59,6 +66,11 @@ int Chunk::GetWidth()
 int Chunk::GetHeight()
 {
 	return HEIGHT;
+}
+
+void Chunk::SetEdgeChunk(bool onEdge)
+{
+	edgeChunk = onEdge;
 }
 
 bool Chunk::LightQueueEmpty() const
@@ -98,7 +110,8 @@ void Chunk::RemoveLightQueuePush(const int x, const int y)
 
 void Chunk::Tick()
 {
-
+	unsigned int color = agk::MakeColor(255,255,255);
+	agk::DrawBox(chunkX * WIDTH *Block::GetSize() + agk::GetViewOffsetX(), chunkY * HEIGHT * Block::GetSize(), (chunkX + 1) * WIDTH * Block::GetSize() + agk::GetViewOffsetX(), (chunkY + 1) * HEIGHT * Block::GetSize(), color, color, color, color, false);
 }
 
 void Chunk::UpdateImage()
@@ -228,10 +241,6 @@ void Chunk::GenerateShadow()
 	agk::SetSpriteSize(blockSprite, 16.0f, 16.0f);
 	agk::SetSpriteOffset(blockSprite, 0.0f, 0.0f);
 
-	//Stores final image
-	unsigned int renderImage = agk::CreateRenderImage(512, 512, 0, 0);
-
-
 	//store previous settings
 	int prev_vres_x = agk::GetVirtualWidth();
 	int prev_vres_y = agk::GetVirtualHeight();
@@ -279,7 +288,12 @@ void Chunk::GenerateShadow()
 
 unsigned int Chunk::Encode()
 {
-	unsigned int data = agk::CreateMemblock(WIDTH * HEIGHT * 4);
+	int size = WIDTH * HEIGHT * 4;
+	size += 4; // lightQueue size
+	size += lightQueue.size() * 2 * 4;
+	size += 4; // removeLightQueue size
+	size += removeLightQueue.size() * 2 * 4;
+	unsigned int data = agk::CreateMemblock(size);
 
 	for(int block_x = 0; block_x < WIDTH; block_x++)
 	{
@@ -291,6 +305,37 @@ unsigned int Chunk::Encode()
 			agk::SetMemblockByte(data, offset + 2048, light[block_x][block_y]);
 			agk::SetMemblockByte(data, offset + 3072, backgroundID[block_x][block_y]);
 		}
+	}
+
+	int offset = WIDTH * HEIGHT * 4; //Start after the block data
+	agk::SetMemblockInt(data, offset, lightQueue.size());
+	offset += 4;
+
+	std::queue<std::array<int, 2>> tempLightQueue = lightQueue;
+	while (!tempLightQueue.empty())
+	{
+		std::array<int, 2> coord = tempLightQueue.front();
+		tempLightQueue.pop();
+
+		agk::SetMemblockInt(data, offset, coord[0]);
+		offset += 4;
+		agk::SetMemblockInt(data, offset, coord[1]);
+		offset += 4;
+	}
+
+	agk::SetMemblockInt(data, offset, removeLightQueue.size());
+	offset += 4;
+
+	std::queue<std::array<int, 2>> tempRemoveLightQueue = removeLightQueue;
+	while (!tempRemoveLightQueue.empty())
+	{
+		std::array<int, 2> coord = tempRemoveLightQueue.front();
+		tempRemoveLightQueue.pop();
+
+		agk::SetMemblockInt(data, offset, coord[0]);
+		offset += 4;
+		agk::SetMemblockInt(data, offset, coord[1]);
+		offset += 4;
 	}
 
 	return data;
@@ -308,5 +353,35 @@ void Chunk::Decode(unsigned int memblock)
 			light[block_x][block_y] = agk::GetMemblockByte(memblock, offset + 2048);
 			backgroundID[block_x][block_y] = agk::GetMemblockByte(memblock, offset + 3072);
 		}
+	}
+
+	int offset = WIDTH * HEIGHT * 4;
+
+	// LightQueue
+	int lightQueueSize = agk::GetMemblockInt(memblock, offset);
+	offset += 4;
+
+	for (int i = 0; i < lightQueueSize; i++) 
+	{
+		int block_x = agk::GetMemblockInt(memblock, offset); 
+		offset += 4;
+		int block_y = agk::GetMemblockInt(memblock, offset); 
+		offset += 4;
+
+		LightQueuePush(block_x, block_y);
+	}
+
+	// RemoveLightQueue
+	int removeLightQueueSize = agk::GetMemblockInt(memblock, offset);
+	offset += 4;
+
+	for (int i = 0; i < removeLightQueueSize; i++) 
+	{
+		int block_x = agk::GetMemblockInt(memblock, offset); 
+		offset += 4;
+		int block_y = agk::GetMemblockInt(memblock, offset); 
+		offset += 4;
+
+		RemoveLightQueuePush(block_x, block_y);
 	}
 }

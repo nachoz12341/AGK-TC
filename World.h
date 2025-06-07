@@ -16,7 +16,10 @@ class World {
 		void SetBlock(int x, int y, BlockID block);
 		
 		BlockID GetBlock(int x, int y) const;
+		BlockID GetBackground(int x, int y) const;
 		Light GetLight(int x, int y) const;
+
+		void SetLight(int x, int y, Light light);
 		
 		unsigned int GetTerrainImage() const { return terrainImage; }
 		unsigned int GetShadowImage() const { return shadowImage; }
@@ -37,9 +40,9 @@ class World {
 
 		std::vector<std::vector<Chunk*>> chunkGrid;
 		std::queue<Chunk*> buildQueue;
-		std::queue<Chunk*> updateQueue;
-		int WIDTH = 5;	//In chunks
-		int HEIGHT = 5;
+		std::queue<Chunk*> renderQueue;
+		int WIDTH = 7;	//In chunks
+		int HEIGHT = 7;
 
 		int originX; //Controls which chunk is our center chunk
 		int originY;
@@ -48,6 +51,10 @@ class World {
 		unsigned int shadowImage;
 		unsigned int worldSprite;
 		unsigned int worldShader;
+
+		void ProcessBuildQueue();
+		void ProcessRenderQueue();
+		void ProcessChunkTicks();
 
 		void GenerateTerrain(Chunk* chunk);
 		void FillLightQueue(Chunk* chunk);

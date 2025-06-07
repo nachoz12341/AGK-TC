@@ -98,6 +98,9 @@ void Player::Update()
 	//Get the shadowmap to darken the player
 	agk::SetSpriteAdditionalImage(playerSprite, world->GetShadowImage(), 1);
 	agk::SetShaderConstantByName(playerShader, "playerOffset", agk::WorldToScreenX(x) - agk::GetSpriteOffsetX(playerSprite), agk::WorldToScreenY(y) - agk::GetSpriteOffsetY(playerSprite), 0, 0);
+
+	agk::Print(x);
+	agk::Print(y);
 }
 
 
