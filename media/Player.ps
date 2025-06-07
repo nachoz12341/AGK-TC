@@ -1,0 +1,28 @@
+uniform sampler2D texture0; //Diffuse
+uniform sampler2D texture1; //Shadowmap
+
+varying mediump vec2 uvVarying;
+varying mediump vec4 colorVarying;
+
+uniform vec3 ambientColor;
+uniform vec2 agk_resolution;
+uniform vec2 agk_spritesize;
+uniform vec2 playerOffset;
+
+void main()
+{
+    vec4 texColor = texture2D(texture0, uvVarying) * colorVarying;    
+    
+
+    float blurSize = 8.0;
+    vec2 pixelSize = vec2(1.0)/agk_resolution;
+    vec2 shadowUV =  (uvVarying * (agk_spritesize*pixelSize)) + playerOffset*pixelSize;
+    vec4 shadowColor = texture2D(texture1, shadowUV);
+    shadowColor += texture2D(texture1, shadowUV + vec2(0.0, -blurSize) * pixelSize);
+    shadowColor += texture2D(texture1, shadowUV + vec2(0.0, blurSize) * pixelSize);
+    shadowColor += texture2D(texture1, shadowUV + vec2(-blurSize, 0.0) * pixelSize);
+    shadowColor += texture2D(texture1, shadowUV + vec2(blurSize, 0.0) * pixelSize);
+    shadowColor /= 5.0;
+    
+    gl_FragColor = texColor * shadowColor;
+}

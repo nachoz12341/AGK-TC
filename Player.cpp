@@ -16,8 +16,11 @@ Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
 
 	playerImage = agk::LoadImage("player.png");
 	playerSprite = agk::CreateSprite(playerImage);
+	playerShader = agk::LoadSpriteShader("Player.ps");
+	agk::SetSpritePhysicsOff(playerSprite);	//Don't need built in physics
 	agk::SetSpritePosition(playerSprite, x, y);
 	agk::SetSpriteDepth(playerSprite,1);
+	agk::SetSpriteShader(playerSprite, playerShader);
 
 	highlightImage = agk::LoadImage("highlight.png");
 	highlightSprite = agk::CreateSprite(highlightImage);
@@ -28,32 +31,30 @@ Player::~Player()
 {
 	agk::DeleteSprite(playerSprite);
 	agk::DeleteImage(playerImage);
-
+	agk::DeleteShader(playerShader);
 	agk::DeleteSprite(highlightSprite);
 	agk::DeleteImage(highlightImage);
+	delete collider;
 }
 
 void Player::Update()
 {
 	float x_speed = 0.0f;
-	float y_speed = 0.0f;
 
 	//Movement Controls
 	if (agk::GetRawKeyState(AGKEY_D))	x_speed = 4.0f;
 	if (agk::GetRawKeyState(AGKEY_A))	x_speed = -4.0f;
-
-	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())
-		y_speed = -5.25f;
-
+	
 	if (x_speed != 0.0f)
 		collider->SetXSpeed(x_speed);
 
-	if (y_speed != 0.0f)
-		collider->SetYSpeed(y_speed);
+	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())
+		collider->SetYSpeed(-5.25f);
 
 	//Zoom
 	float mouse_delta = agk::GetRawMouseWheelDelta();
-	if (mouse_delta != 0)
+
+	if (mouse_delta != 0.0f)
 	{
 		float current_zoom = agk::GetViewZoom();
 		agk::SetViewZoom(std::min(std::max(current_zoom + mouse_delta * 0.0625f, 1.0f), 4.0f));
@@ -75,7 +76,7 @@ void Player::Update()
 
 	if (agk::GetRawMouseRightState() && world->GetBlock(block_x, block_y)==ID::Air)
 	{
-		world->SetBlock(block_x, block_y, rand()%ID::Count);
+		world->SetBlock(block_x, block_y, ID::Stone);
 	}
 	
 
@@ -93,6 +94,13 @@ void Player::Update()
 	float cam_y = Lerp(agk::GetViewOffsetY(), y - (float)agk::GetVirtualHeight() / 2.0f, 0.5f);
 	agk::SetViewOffset(cam_x, cam_y);
 
+	
+	//Get the shadowmap to darken the player
+	agk::SetSpriteAdditionalImage(playerSprite, world->GetShadowImage(), 1);
+	agk::SetShaderConstantByName(playerShader, "playerOffset", agk::WorldToScreenX(x) - agk::GetSpriteOffsetX(playerSprite), agk::WorldToScreenY(y) - agk::GetSpriteOffsetY(playerSprite), 0, 0);
+
+	agk::Print(x);
+	agk::Print(y);
 }
 
 
