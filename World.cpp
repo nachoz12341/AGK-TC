@@ -8,6 +8,11 @@ World::World()
 {
 	Block::LoadImages();
 
+	//Set up noise generator
+	noiseGenerator.SetSeed(10110101);	//Set a fixed seed for consistent world generation
+	noiseGenerator.SetFrequency(0.01f);	
+	noiseGenerator.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);	
+
 	//Initiate chunk grid
 	chunkGrid.resize(WIDTH);
 
@@ -243,19 +248,19 @@ void World::SetBlock(const int x, const int y, const BlockID block)
 		chunk->SetBlock(block_x, block_y, block);
 
 		//If placing a light source
-		if (block == ID::Torch)
+		if (Block::GetLight(block)!=0)
 		{
-			chunk->SetLight(block_x, block_y, 15);
+			chunk->SetLight(block_x, block_y, Block::GetLight(block));
 			chunk->LightQueuePush(x, y);
 		}
-		else if (block != ID::Air || block_prev == ID::Torch)	//Placing a regular block
+		else if (block != ID::Air || Block::GetLight(block_prev) != 0)	//Placing a regular block
 		{
 			chunk->RemoveLightQueuePush(x, y);
 		}
 		else //breaking a block
 		{
 			if (chunk->GetBackground(block_x, block_y) == 0)
-				chunk->SetLight(block_x, block_y, 15);
+				chunk->SetLight(block_x, block_y, 31);
 			else
 			{
 				Light new_light = std::max(GetLight(x + 1, y), std::max(GetLight(x - 1, y), std::max(GetLight(x , y + 1), GetLight(x, y - 1))));
@@ -361,23 +366,28 @@ void World::GenerateTerrain(Chunk* chunk)
 {
 	for (int x = 0; x < Chunk::GetWidth();x++)
 	{
-		int threshhold = (int)(sin(((chunk->GetX() * Chunk::GetWidth()) + x) / 90.0f) * 32.0f) + 92; //Temporary sin wave for rolling hills
+		int world_x = (chunk->GetX() * Chunk::GetWidth()) + x;
+		int threshhold = (int)(sin(world_x / 90.0f) * 32.0f) + 92; //Temporary sin wave for rolling hills
 
 		for (int y = 0; y < Chunk::GetHeight();y++)
 		{
-			int position = (chunk->GetY() * Chunk::GetHeight()) + y;
+			int world_y = (chunk->GetY() * Chunk::GetHeight()) + y;
 
 			BlockID block = ID::Air;
 
-			if (position >= threshhold + 17)
+			if (world_y >= threshhold + 17)
 				block = ID::Stone;
-			else if (position >= threshhold + 1)
+			else if (world_y >= threshhold + 1)
 				block = ID::Dirt;
-			else if (position >= threshhold)
+			else if (world_y >= threshhold)
 				block = ID::Grass;
 
 			if (block != ID::Air)
 			{
+				float noise = noiseGenerator.GetNoise((float)(world_x) * 1.5f, (float)(world_y) * 1.5f);
+				if (std::abs(noise) < 0.25f)
+					block = ID::Air;
+
 				chunk->SetBlock(x, y, block);
 				chunk->SetBackground(x, y, 1);
 			}
@@ -398,7 +408,7 @@ void World::FillLightQueue(Chunk* chunk)
 		{
 			if (chunk->GetBlock(block_x, block_y) == ID::Air && chunk->GetBackground(block_x, block_y) == 0)
 			{
-				chunk->SetLight(block_x, block_y, 15);
+				chunk->SetLight(block_x, block_y, 31);
 				chunk->LightQueuePush(world_x+block_x, world_y+block_y);
 			}
 		}
@@ -439,7 +449,7 @@ void World::GenerateLight(Chunk* chunk)
 
 			Light new_light = current_light;
 
-			if (GetBlock(nx, ny) != ID::Air)
+			if (Block::GetLightMode(GetBlock(nx, ny)) == LIGHT_OPAQUE)
 				new_light = std::max(0, new_light - 2);
 			else if (GetBackground(nx, ny) != 0)
 				new_light = std::max(0, new_light - 1);
@@ -452,7 +462,6 @@ void World::GenerateLight(Chunk* chunk)
 				// If we are not in the same chunk, we need to update the render queue
 				if (chunk != updateChunk && !updateChunk->GetEdgeChunk())
 				{
-					RemoveLight(updateChunk);
 					renderQueue.push(updateChunk);
 				}
 			}

@@ -187,7 +187,7 @@ bool Collider::DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vec
 	for (int iX = 0; iX < xCoords.size(); iX += xIt)
 		for (int iY = 0; iY < yCoords.size(); iY += yIt)
 			{
-				if (world->GetBlock((chunk->GetX() * chunk->GetWidth()) + xCoords[iX], (chunk->GetY() * chunk->GetHeight()) + yCoords[iY]) != ID::Air)
+				if (Block::GetCollision(world->GetBlock((chunk->GetX() * chunk->GetWidth()) + xCoords[iX], (chunk->GetY() * chunk->GetHeight()) + yCoords[iY])) == COLLIDE_SOLID)
 				{
 					x = iX;
 					y = iY;

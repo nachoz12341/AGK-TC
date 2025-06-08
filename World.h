@@ -5,6 +5,7 @@
 #include <queue>
 
 #include "Chunk.h"
+#include "FastNoiseLite.h"
 
 class World {
 	public:
@@ -41,6 +42,9 @@ class World {
 		std::vector<std::vector<Chunk*>> chunkGrid;
 		std::queue<Chunk*> buildQueue;
 		std::queue<Chunk*> renderQueue;
+
+		FastNoiseLite noiseGenerator;
+
 		int WIDTH = 7;	//In chunks
 		int HEIGHT = 7;
 

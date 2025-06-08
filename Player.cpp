@@ -49,7 +49,7 @@ void Player::Update()
 		collider->SetXSpeed(x_speed);
 
 	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())
-		collider->SetYSpeed(-5.25f);
+		collider->SetYSpeed(-6.0f);
 
 	//Zoom
 	float mouse_delta = agk::GetRawMouseWheelDelta();
@@ -60,7 +60,7 @@ void Player::Update()
 		agk::SetViewZoom(std::min(std::max(current_zoom + mouse_delta * 0.0625f, 1.0f), 4.0f));
 	}
 
-	if (agk::GetRawMouseMiddlePressed())
+	if (agk::GetRawKeyPressed(AGKEY_EQUAL))
 	{
 		agk::SetViewZoom(2.0f);	//Reset to base zoom
 	}
@@ -76,7 +76,7 @@ void Player::Update()
 
 	if (agk::GetRawMouseRightState() && world->GetBlock(block_x, block_y) == ID::Air)
 	{
-		world->SetBlock(block_x, block_y, ID::Stone);
+		world->SetBlock(block_x, block_y, ID::Daisy);
 	}
 
 	if (agk::GetRawMouseMiddleState() && world->GetBlock(block_x, block_y) == ID::Air)
