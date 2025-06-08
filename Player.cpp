@@ -69,14 +69,19 @@ void Player::Update()
 	int block_x = World::PixelToWorldCoordX(agk::ScreenToWorldX(agk::GetRawMouseX()));
 	int block_y = World::PixelToWorldCoordY(agk::ScreenToWorldY(agk::GetRawMouseY()));
 
-	if (agk::GetRawMouseLeftState())
+	if (agk::GetRawMouseLeftState() && world->GetBlock(block_x, block_y) != ID::Air)
 	{
 		world->SetBlock(block_x, block_y, ID::Air);
 	}
 
-	if (agk::GetRawMouseRightState() && world->GetBlock(block_x, block_y)==ID::Air)
+	if (agk::GetRawMouseRightState() && world->GetBlock(block_x, block_y) == ID::Air)
 	{
 		world->SetBlock(block_x, block_y, ID::Stone);
+	}
+
+	if (agk::GetRawMouseMiddleState() && world->GetBlock(block_x, block_y) == ID::Air)
+	{
+		world->SetBlock(block_x, block_y, ID::Torch);
 	}
 	
 

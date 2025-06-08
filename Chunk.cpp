@@ -35,6 +35,8 @@ Chunk::Chunk(const int x, const int y)
 	
 	terrainImage = agk::CreateRenderImage(512, 512, 0, 0);
 	shadowImage = agk::CreateRenderImage(512, 512, 0, 0);
+
+	changed = true;
 }
 
 Chunk::~Chunk()
@@ -116,8 +118,11 @@ void Chunk::Tick()
 
 void Chunk::UpdateImage()
 {
-	GenerateImage();
-	UpdateShadow();
+	if (changed)
+	{
+		GenerateImage();
+		UpdateShadow();
+	}
 }
 
 void Chunk::UpdateShadow()
@@ -158,6 +163,7 @@ unsigned int Chunk::GetShadowImage() const
 void Chunk::SetBlock(const int x, const int y, const BlockID block)
 {
 	blockID[x][y] = block;
+	changed = true;
 }
 
 void Chunk::SetMetadata(const int x, const int y, const Metadata data)
@@ -168,6 +174,7 @@ void Chunk::SetMetadata(const int x, const int y, const Metadata data)
 void Chunk::SetLight(const int x, const int y, const Light light)
 {
 	this->light[x][y] = light;
+	changed = true;
 }
 
 void Chunk::SetBackground(const int x, const int y, const BackgroundID background)
@@ -178,8 +185,7 @@ void Chunk::SetBackground(const int x, const int y, const BackgroundID backgroun
 void Chunk::GenerateImage()
 {
 	//Create background image
-	unsigned int backgroundImage = agk::CreateImageColor(96, 96, 96, 255);//77, 63, 56, 255);
-	agk::ResizeImage(backgroundImage, 16, 16);
+	unsigned int backgroundImage = Block::GetBackgroundImage();
 	
 	//Create dummy sprite
 	unsigned int blockSprite = agk::CreateSprite(0);
@@ -203,9 +209,9 @@ void Chunk::GenerateImage()
 
 	agk::ClearScreen();
 	
-	for (int x = 0; x < WIDTH;x++)
+	for (int x = 0; x < WIDTH; x++)
 	{
-		for (int y = 0; y < HEIGHT;y++)
+		for (int y = 0; y < HEIGHT; y++)
 		{
 			if (blockID[x][y] != ID::Air)
 			{
@@ -231,7 +237,8 @@ void Chunk::GenerateImage()
 
 	//Cleanup
 	agk::DeleteSprite(blockSprite);
-	agk::DeleteImage(backgroundImage);
+	//Reset changed to false
+	changed = false;
 }
 
 void Chunk::GenerateShadow()
@@ -258,13 +265,13 @@ void Chunk::GenerateShadow()
 
 	agk::ClearScreen();
 
-	for (int x = 0; x < WIDTH;x++)
+	for (int x = 0; x < WIDTH; x++)
 	{
-		for (int y = 0; y < HEIGHT;y++)
+		for (int y = 0; y < HEIGHT; y++)
 		{
 			agk::SetSpriteColor(blockSprite, 255, 255, 255, 255);	//Light
 
-			if (blockID[x][y] != ID::Air || backgroundID[x][y]!=0)
+			if (blockID[x][y] != ID::Air || backgroundID[x][y] != 0)
 			{
 				Light light_level = light[x][y];
 				agk::SetSpriteColor(blockSprite, light_level*17, light_level * 17, light_level * 17, 255);	//Shadow
@@ -290,9 +297,9 @@ unsigned int Chunk::Encode()
 {
 	int size = WIDTH * HEIGHT * 4;
 	size += 4; // lightQueue size
-	size += lightQueue.size() * 2 * 4;
+	size += (int)lightQueue.size() * 2 * 4;
 	size += 4; // removeLightQueue size
-	size += removeLightQueue.size() * 2 * 4;
+	size += (int)removeLightQueue.size() * 2 * 4;
 	unsigned int data = agk::CreateMemblock(size);
 
 	for(int block_x = 0; block_x < WIDTH; block_x++)
@@ -308,7 +315,7 @@ unsigned int Chunk::Encode()
 	}
 
 	int offset = WIDTH * HEIGHT * 4; //Start after the block data
-	agk::SetMemblockInt(data, offset, lightQueue.size());
+	agk::SetMemblockInt(data, offset, (int)lightQueue.size());
 	offset += 4;
 
 	std::queue<std::array<int, 2>> tempLightQueue = lightQueue;
@@ -323,7 +330,7 @@ unsigned int Chunk::Encode()
 		offset += 4;
 	}
 
-	agk::SetMemblockInt(data, offset, removeLightQueue.size());
+	agk::SetMemblockInt(data, offset, (int)removeLightQueue.size());
 	offset += 4;
 
 	std::queue<std::array<int, 2>> tempRemoveLightQueue = removeLightQueue;

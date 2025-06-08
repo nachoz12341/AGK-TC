@@ -20,6 +20,7 @@ typedef enum ID {
 	Sand,
 	Bricks,
 	Daisy,
+	Torch,
 	Count
 }ID;
 
@@ -29,12 +30,12 @@ class Block {
 		static void LoadImages();
 		static void UnloadImages();
 		static unsigned int GetImage(BlockID block);
+		static unsigned int GetBackgroundImage();
 
 	private:
 		static constexpr float SIZE = 16.0f;	//In pixels
 		static std::vector<unsigned int> blockImages;
-
-
+		static unsigned int backgroundImage;
 };
 
 #endif

@@ -2,6 +2,7 @@
 #include "agk.h"
 
 std::vector<unsigned int> Block::blockImages;
+unsigned int Block::backgroundImage;
 
 float Block::GetSize()
 {
@@ -20,6 +21,9 @@ void Block::LoadImages()
 	blockImages.push_back(agk::LoadImage("sand.png"));
 	blockImages.push_back(agk::LoadImage("bricks.png"));
 	blockImages.push_back(agk::LoadImage("oxeye_daisy.png"));
+	blockImages.push_back(agk::LoadImage("torch.png"));
+
+	backgroundImage = agk::LoadImage("background.png");
 }
 
 void Block::UnloadImages()
@@ -30,9 +34,16 @@ void Block::UnloadImages()
 	}
 
 	blockImages.clear();
+
+	agk::DeleteImage(backgroundImage);
 }
 
 unsigned int Block::GetImage(const BlockID block)
 {
 	return blockImages[block];
+}
+
+unsigned int Block::GetBackgroundImage()
+{
+	return backgroundImage;
 }

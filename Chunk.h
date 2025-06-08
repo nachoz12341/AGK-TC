@@ -36,6 +36,7 @@ class Chunk {
 		int GetY() const;
 
 		bool GetEdgeChunk() const;
+		bool GetChanged() const;
 
 		static int GetWidth();
 		static int GetHeight();
@@ -52,6 +53,7 @@ class Chunk {
 		static const int HEIGHT = 32;
 
 		bool edgeChunk;
+		bool changed;
 
 		std::vector<std::vector<BlockID>> blockID;
 		std::vector<std::vector<Metadata>> metadata;

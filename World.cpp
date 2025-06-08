@@ -103,11 +103,9 @@ void World::ProcessRenderQueue()
 	{
 		Chunk* chunk = renderQueue.front();
 		renderQueue.pop();
+		RemoveLight(chunk);
 		GenerateLight(chunk);
 		chunk->UpdateImage();
-
-		std::string s = std::to_string(chunk->GetX())+","+std::to_string(chunk->GetY());
-		agk::Print(s.c_str());
 	}
 }
 
@@ -241,18 +239,18 @@ void World::SetBlock(const int x, const int y, const BlockID block)
 		int block_x = x - (chunk_x * Chunk::GetWidth());
 		int block_y = y - (chunk_y * Chunk::GetHeight());
 
+		BlockID block_prev = chunk->GetBlock(block_x, block_y);	//Get previous block
 		chunk->SetBlock(block_x, block_y, block);
 
-		//If placing a new block
-		if (block != ID::Air)
+		//If placing a light source
+		if (block == ID::Torch)
+		{
+			chunk->SetLight(block_x, block_y, 15);
+			chunk->LightQueuePush(x, y);
+		}
+		else if (block != ID::Air || block_prev == ID::Torch)	//Placing a regular block
 		{
 			chunk->RemoveLightQueuePush(x, y);
-			RemoveLight(chunk);
-
-			//If placing a torch
-			//chunk->SetLight(block_x, block_y, 15);
-			//chunk->LightQueuePush(block_x, block_y);
-			//GenerateLight(chunk);
 		}
 		else //breaking a block
 		{
@@ -453,7 +451,10 @@ void World::GenerateLight(Chunk* chunk)
 
 				// If we are not in the same chunk, we need to update the render queue
 				if (chunk != updateChunk && !updateChunk->GetEdgeChunk())
+				{
+					RemoveLight(updateChunk);
 					renderQueue.push(updateChunk);
+				}
 			}
 		}
 	}
@@ -493,20 +494,19 @@ void World::RemoveLight(Chunk* chunk)
 			}
 
 			Light neighbor_light = GetLight(nx, ny);
-			Light new_light = current_light;
 
 			// Different rules depending on area we're traveling
-			if (GetBlock(nx, ny) != ID::Air)
-				new_light = std::min(15, new_light + 2);
-			else if (GetBackground(nx, ny) != 0)
-				new_light = std::min(15, new_light + 1);
+			//if (GetBlock(nx, ny) != ID::Air)
+			//	new_light = std::min(15, new_light + 2);
+			//else if (GetBackground(nx, ny) != 0)
+			//	new_light = std::min(15, new_light + 1);
 
 			// Continue removing
-			if (neighbor_light != 0 && neighbor_light < new_light)
+			if (neighbor_light != 0 && neighbor_light < current_light)
 			{
 				updateChunk->RemoveLightQueuePush(nx, ny);
 			}
-			else if (neighbor_light >= new_light)
+			else if (neighbor_light >= current_light)
 			{
 				updateChunk->LightQueuePush(nx, ny); // Stop removing and re-spread light
 			}
