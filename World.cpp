@@ -182,25 +182,27 @@ void World::SetOriginChunk(const int x, const int y)
 			}
 
 			//Create new chunks
-			if (chunkGrid[chunk_x][chunk_y] == NULL)
+			Chunk* chunk = chunkGrid[chunk_x][chunk_y];
+			if (chunk == NULL)
 			{
 				chunkGrid[chunk_x][chunk_y] = new Chunk(x - (WIDTH / 2) + chunk_x, y - (HEIGHT/ 2) + chunk_y);
-				buildQueue.push(chunkGrid[chunk_x][chunk_y]);
+				chunk = chunkGrid[chunk_x][chunk_y];
+				buildQueue.push(chunk);
 			}
 
 			//Set edge chunk
 			if (chunk_x == 0 || chunk_x == WIDTH - 1 || chunk_y == 0 || chunk_y == HEIGHT - 1)
 			{
-				RemoveChunkFromQueue(renderQueue, chunkGrid[chunk_x][chunk_y]);	//Don't render chunks on edge
-				chunkGrid[chunk_x][chunk_y]->SetEdgeChunk(true);	//Set edge chunk if we are on the edge of the world
+				RemoveChunkFromQueue(renderQueue, chunk);	//Don't render chunks on edge
+				chunk->SetEdgeChunk(true);	//Set edge chunk if we are on the edge of the world
 			}
 			else
 			{
 				//If was an edge chunk, but now is not, push to render queue
-				if (chunkGrid[chunk_x][chunk_y]->GetEdgeChunk())
-					renderQueue.push(chunkGrid[chunk_x][chunk_y]);
+				if (chunk->GetEdgeChunk())
+					renderQueue.push(chunk);
 
-				chunkGrid[chunk_x][chunk_y]->SetEdgeChunk(false);
+				chunk->SetEdgeChunk(false);
 			}
 		}
 	}
@@ -353,12 +355,12 @@ int World::PixelToWorldCoordY(const float y)
 
 int World::WorldCoordToChunkX(int x)
 {
-	return x / Chunk::GetWidth();
+	return (int)floor((float)x / Chunk::GetWidth());	//Required casts to get proper negative values
 }
 
 int World::WorldCoordToChunkY(int y)
 {
-	return y / Chunk::GetHeight();
+	return (int)floor((float)y / Chunk::GetHeight());	//Required casts to get proper negative values
 }
 
 //Chunk generation steps
@@ -503,12 +505,6 @@ void World::RemoveLight(Chunk* chunk)
 			}
 
 			Light neighbor_light = GetLight(nx, ny);
-
-			// Different rules depending on area we're traveling
-			//if (GetBlock(nx, ny) != ID::Air)
-			//	new_light = std::min(15, new_light + 2);
-			//else if (GetBackground(nx, ny) != 0)
-			//	new_light = std::min(15, new_light + 1);
 
 			// Continue removing
 			if (neighbor_light != 0 && neighbor_light < current_light)

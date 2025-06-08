@@ -76,7 +76,7 @@ void Player::Update()
 
 	if (agk::GetRawMouseRightState() && world->GetBlock(block_x, block_y) == ID::Air)
 	{
-		world->SetBlock(block_x, block_y, ID::Daisy);
+		world->SetBlock(block_x, block_y, ID::Stone);
 	}
 
 	if (agk::GetRawMouseMiddleState() && world->GetBlock(block_x, block_y) == ID::Air)
@@ -103,9 +103,6 @@ void Player::Update()
 	//Get the shadowmap to darken the player
 	agk::SetSpriteAdditionalImage(playerSprite, world->GetShadowImage(), 1);
 	agk::SetShaderConstantByName(playerShader, "playerOffset", agk::WorldToScreenX(x) - agk::GetSpriteOffsetX(playerSprite), agk::WorldToScreenY(y) - agk::GetSpriteOffsetY(playerSprite), 0, 0);
-
-	agk::Print(x);
-	agk::Print(y);
 }
 
 
