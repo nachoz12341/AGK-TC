@@ -377,6 +377,9 @@ void World::GenerateTerrain(Chunk* chunk)
 
 			BlockID block = ID::Air;
 
+			if (world_y == threshhold-1 && rand() % 100 <= 5)
+				block = ID::Daisy;
+
 			if (world_y >= threshhold + 17)
 				block = ID::Stone;
 			else if (world_y >= threshhold + 1)
@@ -386,12 +389,22 @@ void World::GenerateTerrain(Chunk* chunk)
 
 			if (block != ID::Air)
 			{
-				float noise = noiseGenerator.GetNoise((float)(world_x) * 1.5f, (float)(world_y) * 1.5f);
-				if (std::abs(noise) < 0.25f)
+				noiseGenerator.SetFractalType(FastNoiseLite::FractalType_FBm);
+				noiseGenerator.SetFrequency(0.0075f);
+				noiseGenerator.SetFractalLacunarity(2.0f);
+				float connectingNoise = noiseGenerator.GetNoise((float)(world_x), (float)(world_y));
+
+				noiseGenerator.SetFractalType(FastNoiseLite::FractalType_None);
+				noiseGenerator.SetFrequency(0.025f);
+				float bigCaveNoise = noiseGenerator.GetNoise((float)(world_x) / 8.0f, (float)(world_y));
+
+				if (abs(connectingNoise) < 0.125f || bigCaveNoise >= .75f)
 					block = ID::Air;
 
 				chunk->SetBlock(x, y, block);
-				chunk->SetBackground(x, y, 1);
+
+				if(world_y>=threshhold)
+					chunk->SetBackground(x, y, 1);
 			}
 
 		}

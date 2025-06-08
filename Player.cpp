@@ -4,6 +4,7 @@
 #include "ScanCodes.h"
 #include "Util.h"
 #include <cmath>
+#include <string>
 
 Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
 {
@@ -79,16 +80,25 @@ void Player::Update()
 		world->SetBlock(block_x, block_y, ID::Stone);
 	}
 
-	if (agk::GetRawMouseMiddleState() && world->GetBlock(block_x, block_y) == ID::Air)
+	if (agk::GetRawMouseMiddlePressed() && world->GetBlock(block_x, block_y) == ID::Air)
 	{
 		world->SetBlock(block_x, block_y, ID::Torch);
 	}
+
+	if (agk::GetRawKeyPressed(AGKEY_UP))
+	{
+		collider->SetPosition(x, y-32*16);	//Update collider position
+	}
 	
+
 
 	//Movement
 	collider->Step();
 	x = collider->GetX();
 	y = collider->GetY();
+
+	std::string s = "Player Position: " + std::to_string(World::PixelToWorldCoordX(x)) + ", " + std::to_string(World::PixelToWorldCoordY(y));
+	agk::Print(s.c_str());
 
 	//Drawing
 	agk::SetSpritePosition(playerSprite, x - agk::GetImageWidth(playerImage) / 2.0f, y - agk::GetImageHeight(playerImage) / 2.0f);
