@@ -45,8 +45,8 @@ class World {
 
 		FastNoiseLite noiseGenerator;
 
-		int WIDTH = 7;	//In chunks
-		int HEIGHT = 7;
+		int WIDTH = 5;	//In chunks
+		int HEIGHT = 5;
 
 		int originX; //Controls which chunk is our center chunk
 		int originY;

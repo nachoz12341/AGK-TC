@@ -33,8 +33,15 @@ Chunk::Chunk(const int x, const int y)
 		}
 	}
 	
-	terrainImage = agk::CreateRenderImage(512, 512, 0, 0);
-	shadowImage = agk::CreateRenderImage(512, 512, 0, 0);
+	terrainImage = agk::CreateRenderImage(WIDTH * (int)Block::GetSize(), HEIGHT * (int)Block::GetSize(), 0, 0);
+	agk::SetRenderToImage(terrainImage, 0);	//Clear the render image on create
+	agk::ClearScreen();	
+	agk::SetRenderToScreen();
+
+	shadowImage = agk::CreateRenderImage(WIDTH * (int)Block::GetSize(), HEIGHT * (int)Block::GetSize(), 0, 0);
+	agk::SetRenderToImage(shadowImage, 0);	//Clear the render image on create
+	agk::ClearScreen();
+	agk::SetRenderToScreen();
 
 	changed = true;
 }
@@ -203,7 +210,7 @@ void Chunk::GenerateImage()
 
 	//Draw to render image
 	agk::SetRenderToImage(terrainImage, 0);
-	agk::SetVirtualResolution(512, 512);
+	agk::SetVirtualResolution(WIDTH * (int)Block::GetSize(), HEIGHT * (int)Block::GetSize());
 
 	agk::ClearScreen();
 	
@@ -261,7 +268,7 @@ void Chunk::GenerateShadow()
 
 	//Draw to render image
 	agk::SetRenderToImage(shadowImage, 0);
-	agk::SetVirtualResolution(512, 512);
+	agk::SetVirtualResolution(WIDTH * (int)Block::GetSize(), HEIGHT * (int)Block::GetSize());
 
 	agk::ClearScreen();
 

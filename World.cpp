@@ -36,7 +36,15 @@ World::World()
 	originY = HEIGHT/2;
 
 	terrainImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
+	agk::SetRenderToImage(terrainImage, 0);	//Clear the render image on create
+	agk::ClearScreen();
+	agk::SetRenderToScreen();
+
 	shadowImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
+	agk::SetRenderToImage(shadowImage, 0);	//Clear the render image on create
+	agk::ClearScreen();
+	agk::SetRenderToScreen();
+
 	worldSprite = agk::CreateSprite(terrainImage);
 	agk::SetSpritePhysicsOff(worldSprite);	//Don't need built in physics
 
@@ -560,7 +568,7 @@ void World::RenderChunksToImage(RenderImageType type)
 {
 	//Create dummy sprite
 	unsigned int renderSprite = agk::CreateSprite(0);
-	agk::SetSpriteSize(renderSprite, 512.0f, 512.0f);
+	agk::SetSpriteSize(renderSprite, Chunk::GetWidth() * Block::GetSize(), Chunk::GetHeight() * Block::GetSize());
 	agk::SetSpriteOffset(renderSprite, 0.0f, 0.0f);
 
 	float prev_x = agk::GetViewOffsetX();
