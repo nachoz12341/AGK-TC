@@ -8,6 +8,11 @@ World::World()
 {
 	Block::LoadImages();
 
+	//Set up noise generator
+	noiseGenerator.SetSeed(10110101);	//Set a fixed seed for consistent world generation
+	noiseGenerator.SetFrequency(0.01f);	
+	noiseGenerator.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);	
+
 	//Initiate chunk grid
 	chunkGrid.resize(WIDTH);
 
@@ -31,7 +36,15 @@ World::World()
 	originY = HEIGHT/2;
 
 	terrainImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
+	agk::SetRenderToImage(terrainImage, 0);	//Clear the render image on create
+	agk::ClearScreen();
+	agk::SetRenderToScreen();
+
 	shadowImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
+	agk::SetRenderToImage(shadowImage, 0);	//Clear the render image on create
+	agk::ClearScreen();
+	agk::SetRenderToScreen();
+
 	worldSprite = agk::CreateSprite(terrainImage);
 	agk::SetSpritePhysicsOff(worldSprite);	//Don't need built in physics
 
@@ -177,25 +190,27 @@ void World::SetOriginChunk(const int x, const int y)
 			}
 
 			//Create new chunks
-			if (chunkGrid[chunk_x][chunk_y] == NULL)
+			Chunk* chunk = chunkGrid[chunk_x][chunk_y];
+			if (chunk == NULL)
 			{
 				chunkGrid[chunk_x][chunk_y] = new Chunk(x - (WIDTH / 2) + chunk_x, y - (HEIGHT/ 2) + chunk_y);
-				buildQueue.push(chunkGrid[chunk_x][chunk_y]);
+				chunk = chunkGrid[chunk_x][chunk_y];
+				buildQueue.push(chunk);
 			}
 
 			//Set edge chunk
 			if (chunk_x == 0 || chunk_x == WIDTH - 1 || chunk_y == 0 || chunk_y == HEIGHT - 1)
 			{
-				RemoveChunkFromQueue(renderQueue, chunkGrid[chunk_x][chunk_y]);	//Don't render chunks on edge
-				chunkGrid[chunk_x][chunk_y]->SetEdgeChunk(true);	//Set edge chunk if we are on the edge of the world
+				RemoveChunkFromQueue(renderQueue, chunk);	//Don't render chunks on edge
+				chunk->SetEdgeChunk(true);	//Set edge chunk if we are on the edge of the world
 			}
 			else
 			{
 				//If was an edge chunk, but now is not, push to render queue
-				if (chunkGrid[chunk_x][chunk_y]->GetEdgeChunk())
-					renderQueue.push(chunkGrid[chunk_x][chunk_y]);
+				if (chunk->GetEdgeChunk())
+					renderQueue.push(chunk);
 
-				chunkGrid[chunk_x][chunk_y]->SetEdgeChunk(false);
+				chunk->SetEdgeChunk(false);
 			}
 		}
 	}
@@ -243,19 +258,19 @@ void World::SetBlock(const int x, const int y, const BlockID block)
 		chunk->SetBlock(block_x, block_y, block);
 
 		//If placing a light source
-		if (block == ID::Torch)
+		if (Block::GetLight(block)!=0)
 		{
-			chunk->SetLight(block_x, block_y, 15);
+			chunk->SetLight(block_x, block_y, Block::GetLight(block));
 			chunk->LightQueuePush(x, y);
 		}
-		else if (block != ID::Air || block_prev == ID::Torch)	//Placing a regular block
+		else if (block != ID::Air || Block::GetLight(block_prev) != 0)	//Placing a regular block
 		{
 			chunk->RemoveLightQueuePush(x, y);
 		}
 		else //breaking a block
 		{
 			if (chunk->GetBackground(block_x, block_y) == 0)
-				chunk->SetLight(block_x, block_y, 15);
+				chunk->SetLight(block_x, block_y, 31);
 			else
 			{
 				Light new_light = std::max(GetLight(x + 1, y), std::max(GetLight(x - 1, y), std::max(GetLight(x , y + 1), GetLight(x, y - 1))));
@@ -348,12 +363,12 @@ int World::PixelToWorldCoordY(const float y)
 
 int World::WorldCoordToChunkX(int x)
 {
-	return x / Chunk::GetWidth();
+	return (int)floor((float)x / Chunk::GetWidth());	//Required casts to get proper negative values
 }
 
 int World::WorldCoordToChunkY(int y)
 {
-	return y / Chunk::GetHeight();
+	return (int)floor((float)y / Chunk::GetHeight());	//Required casts to get proper negative values
 }
 
 //Chunk generation steps
@@ -361,25 +376,43 @@ void World::GenerateTerrain(Chunk* chunk)
 {
 	for (int x = 0; x < Chunk::GetWidth();x++)
 	{
-		int threshhold = (int)(sin(((chunk->GetX() * Chunk::GetWidth()) + x) / 90.0f) * 32.0f) + 92; //Temporary sin wave for rolling hills
+		int world_x = (chunk->GetX() * Chunk::GetWidth()) + x;
+		int threshhold = (int)(sin(world_x / 90.0f) * 32.0f) + 92; //Temporary sin wave for rolling hills
 
 		for (int y = 0; y < Chunk::GetHeight();y++)
 		{
-			int position = (chunk->GetY() * Chunk::GetHeight()) + y;
+			int world_y = (chunk->GetY() * Chunk::GetHeight()) + y;
 
 			BlockID block = ID::Air;
 
-			if (position >= threshhold + 17)
+			if (world_y == threshhold-1 && rand() % 100 <= 5)
+				block = ID::Daisy;
+
+			if (world_y >= threshhold + 17)
 				block = ID::Stone;
-			else if (position >= threshhold + 1)
+			else if (world_y >= threshhold + 1)
 				block = ID::Dirt;
-			else if (position >= threshhold)
+			else if (world_y >= threshhold)
 				block = ID::Grass;
 
 			if (block != ID::Air)
 			{
+				noiseGenerator.SetFractalType(FastNoiseLite::FractalType_FBm);
+				noiseGenerator.SetFrequency(0.0075f);
+				noiseGenerator.SetFractalLacunarity(2.0f);
+				float connectingNoise = noiseGenerator.GetNoise((float)(world_x), (float)(world_y));
+
+				noiseGenerator.SetFractalType(FastNoiseLite::FractalType_None);
+				noiseGenerator.SetFrequency(0.025f);
+				float bigCaveNoise = noiseGenerator.GetNoise((float)(world_x) / 8.0f, (float)(world_y));
+
+				if (abs(connectingNoise) < 0.125f || bigCaveNoise >= .75f)
+					block = ID::Air;
+
 				chunk->SetBlock(x, y, block);
-				chunk->SetBackground(x, y, 1);
+
+				if(world_y>=threshhold)
+					chunk->SetBackground(x, y, 1);
 			}
 
 		}
@@ -398,7 +431,7 @@ void World::FillLightQueue(Chunk* chunk)
 		{
 			if (chunk->GetBlock(block_x, block_y) == ID::Air && chunk->GetBackground(block_x, block_y) == 0)
 			{
-				chunk->SetLight(block_x, block_y, 15);
+				chunk->SetLight(block_x, block_y, 31);
 				chunk->LightQueuePush(world_x+block_x, world_y+block_y);
 			}
 		}
@@ -439,7 +472,7 @@ void World::GenerateLight(Chunk* chunk)
 
 			Light new_light = current_light;
 
-			if (GetBlock(nx, ny) != ID::Air)
+			if (Block::GetLightMode(GetBlock(nx, ny)) == LIGHT_OPAQUE)
 				new_light = std::max(0, new_light - 2);
 			else if (GetBackground(nx, ny) != 0)
 				new_light = std::max(0, new_light - 1);
@@ -452,7 +485,6 @@ void World::GenerateLight(Chunk* chunk)
 				// If we are not in the same chunk, we need to update the render queue
 				if (chunk != updateChunk && !updateChunk->GetEdgeChunk())
 				{
-					RemoveLight(updateChunk);
 					renderQueue.push(updateChunk);
 				}
 			}
@@ -495,12 +527,6 @@ void World::RemoveLight(Chunk* chunk)
 
 			Light neighbor_light = GetLight(nx, ny);
 
-			// Different rules depending on area we're traveling
-			//if (GetBlock(nx, ny) != ID::Air)
-			//	new_light = std::min(15, new_light + 2);
-			//else if (GetBackground(nx, ny) != 0)
-			//	new_light = std::min(15, new_light + 1);
-
 			// Continue removing
 			if (neighbor_light != 0 && neighbor_light < current_light)
 			{
@@ -542,7 +568,7 @@ void World::RenderChunksToImage(RenderImageType type)
 {
 	//Create dummy sprite
 	unsigned int renderSprite = agk::CreateSprite(0);
-	agk::SetSpriteSize(renderSprite, 512.0f, 512.0f);
+	agk::SetSpriteSize(renderSprite, Chunk::GetWidth() * Block::GetSize(), Chunk::GetHeight() * Block::GetSize());
 	agk::SetSpriteOffset(renderSprite, 0.0f, 0.0f);
 
 	float prev_x = agk::GetViewOffsetX();

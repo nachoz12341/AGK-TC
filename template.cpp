@@ -39,7 +39,7 @@ void app::Begin(void)
 int app::Loop (void)
 {
 	agk::Print( agk::ScreenFPS() );
-	agk::Print( agk::GetManagedSpriteDrawnCount() );
+
 	player->Update();
 	world->SetOriginChunk(World::WorldCoordToChunkX(World::PixelToWorldCoordX(player->GetX())), World::WorldCoordToChunkY(World::PixelToWorldCoordY(player->GetY())));
 	world->Update();

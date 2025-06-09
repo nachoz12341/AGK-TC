@@ -4,6 +4,7 @@
 #include "ScanCodes.h"
 #include "Util.h"
 #include <cmath>
+#include <string>
 
 Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
 {
@@ -49,7 +50,7 @@ void Player::Update()
 		collider->SetXSpeed(x_speed);
 
 	if (agk::GetRawKeyState(AGKEY_SPACE) && collider->GetOnGround())
-		collider->SetYSpeed(-5.25f);
+		collider->SetYSpeed(-6.0f);
 
 	//Zoom
 	float mouse_delta = agk::GetRawMouseWheelDelta();
@@ -60,7 +61,7 @@ void Player::Update()
 		agk::SetViewZoom(std::min(std::max(current_zoom + mouse_delta * 0.0625f, 1.0f), 4.0f));
 	}
 
-	if (agk::GetRawMouseMiddlePressed())
+	if (agk::GetRawKeyPressed(AGKEY_EQUAL))
 	{
 		agk::SetViewZoom(2.0f);	//Reset to base zoom
 	}
@@ -79,16 +80,25 @@ void Player::Update()
 		world->SetBlock(block_x, block_y, ID::Stone);
 	}
 
-	if (agk::GetRawMouseMiddleState() && world->GetBlock(block_x, block_y) == ID::Air)
+	if (agk::GetRawMouseMiddlePressed() && world->GetBlock(block_x, block_y) == ID::Air)
 	{
 		world->SetBlock(block_x, block_y, ID::Torch);
 	}
+
+	if (agk::GetRawKeyPressed(AGKEY_UP))
+	{
+		collider->SetPosition(x, y-32*16);	//Update collider position
+	}
 	
+
 
 	//Movement
 	collider->Step();
 	x = collider->GetX();
 	y = collider->GetY();
+
+	std::string s = "Player Position: " + std::to_string(World::PixelToWorldCoordX(x)) + ", " + std::to_string(World::PixelToWorldCoordY(y));
+	agk::Print(s.c_str());
 
 	//Drawing
 	agk::SetSpritePosition(playerSprite, x - agk::GetImageWidth(playerImage) / 2.0f, y - agk::GetImageHeight(playerImage) / 2.0f);
@@ -103,9 +113,6 @@ void Player::Update()
 	//Get the shadowmap to darken the player
 	agk::SetSpriteAdditionalImage(playerSprite, world->GetShadowImage(), 1);
 	agk::SetShaderConstantByName(playerShader, "playerOffset", agk::WorldToScreenX(x) - agk::GetSpriteOffsetX(playerSprite), agk::WorldToScreenY(y) - agk::GetSpriteOffsetY(playerSprite), 0, 0);
-
-	agk::Print(x);
-	agk::Print(y);
 }
 
 

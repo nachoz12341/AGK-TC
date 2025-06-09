@@ -33,8 +33,15 @@ Chunk::Chunk(const int x, const int y)
 		}
 	}
 	
-	terrainImage = agk::CreateRenderImage(512, 512, 0, 0);
-	shadowImage = agk::CreateRenderImage(512, 512, 0, 0);
+	terrainImage = agk::CreateRenderImage(WIDTH * (int)Block::GetSize(), HEIGHT * (int)Block::GetSize(), 0, 0);
+	agk::SetRenderToImage(terrainImage, 0);	//Clear the render image on create
+	agk::ClearScreen();	
+	agk::SetRenderToScreen();
+
+	shadowImage = agk::CreateRenderImage(WIDTH * (int)Block::GetSize(), HEIGHT * (int)Block::GetSize(), 0, 0);
+	agk::SetRenderToImage(shadowImage, 0);	//Clear the render image on create
+	agk::ClearScreen();
+	agk::SetRenderToScreen();
 
 	changed = true;
 }
@@ -112,8 +119,6 @@ void Chunk::RemoveLightQueuePush(const int x, const int y)
 
 void Chunk::Tick()
 {
-	unsigned int color = agk::MakeColor(255,255,255);
-	agk::DrawBox(chunkX * WIDTH *Block::GetSize() + agk::GetViewOffsetX(), chunkY * HEIGHT * Block::GetSize(), (chunkX + 1) * WIDTH * Block::GetSize() + agk::GetViewOffsetX(), (chunkY + 1) * HEIGHT * Block::GetSize(), color, color, color, color, false);
 }
 
 void Chunk::UpdateImage()
@@ -205,7 +210,7 @@ void Chunk::GenerateImage()
 
 	//Draw to render image
 	agk::SetRenderToImage(terrainImage, 0);
-	agk::SetVirtualResolution(512, 512);
+	agk::SetVirtualResolution(WIDTH * (int)Block::GetSize(), HEIGHT * (int)Block::GetSize());
 
 	agk::ClearScreen();
 	
@@ -213,19 +218,21 @@ void Chunk::GenerateImage()
 	{
 		for (int y = 0; y < HEIGHT; y++)
 		{
-			if (blockID[x][y] != ID::Air)
-			{
-				agk::SetSpriteImage(blockSprite, Block::GetImage(blockID[x][y]));
-				agk::SetSpritePosition(blockSprite, x * 16.0f, y * 16.0f);
-				agk::DrawSprite(blockSprite);
-			}
-			else if (backgroundID[x][y] != 0)
+			DrawMode draw_mode = Block::GetDrawMode(blockID[x][y]);
+
+			if ((draw_mode == DRAW_NONE || draw_mode == DRAW_TRANSPARENT) && backgroundID[x][y] != 0) 
 			{
 				agk::SetSpriteImage(blockSprite, backgroundImage);
 				agk::SetSpritePosition(blockSprite, x * 16.0f, y * 16.0f);
 				agk::DrawSprite(blockSprite);
 			}
 			
+			if (draw_mode != DRAW_NONE)
+			{
+				agk::SetSpriteImage(blockSprite, Block::GetImage(blockID[x][y]));
+				agk::SetSpritePosition(blockSprite, x * 16.0f, y * 16.0f);
+				agk::DrawSprite(blockSprite);
+			}			
 		}
 	}
 
@@ -261,7 +268,7 @@ void Chunk::GenerateShadow()
 
 	//Draw to render image
 	agk::SetRenderToImage(shadowImage, 0);
-	agk::SetVirtualResolution(512, 512);
+	agk::SetVirtualResolution(WIDTH * (int)Block::GetSize(), HEIGHT * (int)Block::GetSize());
 
 	agk::ClearScreen();
 
@@ -271,10 +278,10 @@ void Chunk::GenerateShadow()
 		{
 			agk::SetSpriteColor(blockSprite, 255, 255, 255, 255);	//Light
 
-			if (blockID[x][y] != ID::Air || backgroundID[x][y] != 0)
+			if (Block::GetDrawMode(blockID[x][y]) != DRAW_NONE || backgroundID[x][y] != 0)
 			{
 				Light light_level = light[x][y];
-				agk::SetSpriteColor(blockSprite, light_level*17, light_level * 17, light_level * 17, 255);	//Shadow
+				agk::SetSpriteColor(blockSprite, (light_level*8)+7, (light_level * 8) + 7, (light_level * 8) + 7, 255);	//Shadow
 			}
 
 
