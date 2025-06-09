@@ -107,7 +107,7 @@ void Collider::Step()
 		int iX = 0;
 		int iY = 0;
 
-		if (DetectCollision(chunk, xCoords[1], yCoords[0], CollisionAxis::xAxis, iX, iY))
+		if (DetectCollision(chunk, xCoords[1], yCoords[0], CollisionAxis::xAxis, iX, iY, Sign(xSpeed)))
 		{
 			//No longer moving
 			xSpeed = 0.0f;
@@ -148,8 +148,9 @@ void Collider::Step()
 		int iX = 0;
 		int iY = 0;
 
-		if (DetectCollision(chunk, xCoords[0], yCoords[1], CollisionAxis::yAxis, iX, iY))
+		if (DetectCollision(chunk, xCoords[0], yCoords[1], CollisionAxis::yAxis, iX, iY, Sign(ySpeed)))
 		{
+			
 			//No longer moving
 			ySpeed = 0.0f;
 
@@ -157,7 +158,9 @@ void Collider::Step()
 			bool blockSide = (iY / yBlocks) == 0; //Which side of the block did we collide against
 
 			if (blockSide)
-				y = ((chunk_y * Chunk::GetHeight()) + yCoords[1][iY] + 1) * Block::GetSize() + (height / 2.0f) + 0.01f;
+			{
+				y = ((chunk_y * Chunk::GetHeight()) + yCoords[1][iY] + 1) * Block::GetSize() + (height / 2.0f) + 0.01f;	
+			}
 			else
 			{
 				y = ((chunk_y * Chunk::GetHeight()) + yCoords[1][iY]) * Block::GetSize() - (height / 2.0f) - 0.01f;
@@ -178,7 +181,7 @@ void Collider::Step()
 	xSpeed *= friction;
 }
 
-bool Collider::DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vector<int>& yCoords, CollisionAxis axis, int& x, int& y)
+bool Collider::DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vector<int>& yCoords, CollisionAxis axis, int& x, int& y, int dir)
 {
 	int xIt = axis == CollisionAxis::xAxis ? (int)xCoords.size() - 1 : 1;
 	int yIt = axis == CollisionAxis::yAxis ? (int)yCoords.size() - 1 : 1;
@@ -187,7 +190,9 @@ bool Collider::DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vec
 	for (int iX = 0; iX < xCoords.size(); iX += xIt)
 		for (int iY = 0; iY < yCoords.size(); iY += yIt)
 			{
-				if (Block::GetCollision(world->GetBlock((chunk->GetX() * chunk->GetWidth()) + xCoords[iX], (chunk->GetY() * chunk->GetHeight()) + yCoords[iY])) == COLLIDE_SOLID)
+				Collision collideType = Block::GetCollision(world->GetBlock((chunk->GetX() * chunk->GetWidth()) + xCoords[iX], (chunk->GetY() * chunk->GetHeight()) + yCoords[iY]));
+				
+				if ( collideType == COLLIDE_SOLID || (collideType==COLLIDE_PLATFORM && axis == CollisionAxis::yAxis && dir >0 && iY== yCoords.size()-1))
 				{
 					x = iX;
 					y = iY;

@@ -41,7 +41,7 @@ class Collider {
 
 		bool onGround;
 
-		bool DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vector<int>& yCoords, CollisionAxis axis, int& x, int& y);
+		bool DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vector<int>& yCoords, CollisionAxis axis, int& x, int& y, int dir);
 };
 
 #endif

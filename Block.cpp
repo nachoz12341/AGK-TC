@@ -4,19 +4,20 @@
 std::vector<unsigned int> Block::blockImages;
 unsigned int Block::backgroundImage;
 
-const Block::BlockComponents Block::BlockDefinitions[11] = {
-/*   NAME				  DrawMode			Collision       L  Light Mode*/
-	{(char*)"Air"		, DRAW_NONE		  , COLLIDE_NONE ,  0, LIGHT_TRANSPARENT},
-	{(char*)"Grass"		, DRAW_OPAQUE	  , COLLIDE_SOLID,  0, LIGHT_OPAQUE},
-	{(char*)"Dirt"		, DRAW_OPAQUE	  , COLLIDE_SOLID,  0, LIGHT_OPAQUE},
-	{(char*)"Stone"		, DRAW_OPAQUE	  , COLLIDE_SOLID,  0, LIGHT_OPAQUE},
-	{(char*)"Oak Log"	, DRAW_OPAQUE	  , COLLIDE_SOLID,  0, LIGHT_OPAQUE},
-	{(char*)"Oak Leaves", DRAW_TRANSPARENT, COLLIDE_NONE ,  0, LIGHT_TRANSPARENT},
-	{(char*)"Oak Planks", DRAW_OPAQUE	  , COLLIDE_SOLID,  0, LIGHT_OPAQUE},
-	{(char*)"Sand"		, DRAW_OPAQUE	  , COLLIDE_SOLID,  0, LIGHT_OPAQUE},
-	{(char*)"Bricks"	, DRAW_OPAQUE	  , COLLIDE_SOLID,  0, LIGHT_OPAQUE},
-	{(char*)"Daisy"		, DRAW_TRANSPARENT, COLLIDE_NONE ,  0, LIGHT_TRANSPARENT},
-	{(char*)"Torch"		, DRAW_TRANSPARENT, COLLIDE_NONE , 31, LIGHT_TRANSPARENT}
+const Block::BlockComponents Block::BlockDefinitions[12] = {
+/*   NAME				  DrawMode			Collision			L  Light Mode*/
+	{(char*)"Air"		, DRAW_NONE		  , COLLIDE_NONE	 ,  0, LIGHT_TRANSPARENT},
+	{(char*)"Grass"		, DRAW_OPAQUE	  , COLLIDE_SOLID	 ,  0, LIGHT_OPAQUE},
+	{(char*)"Dirt"		, DRAW_OPAQUE	  , COLLIDE_SOLID	 ,  0, LIGHT_OPAQUE},
+	{(char*)"Stone"		, DRAW_OPAQUE	  , COLLIDE_SOLID	 ,  0, LIGHT_OPAQUE},
+	{(char*)"Oak Log"	, DRAW_OPAQUE	  , COLLIDE_SOLID	 ,  0, LIGHT_OPAQUE},
+	{(char*)"Oak Leaves", DRAW_TRANSPARENT, COLLIDE_NONE	 ,  0, LIGHT_TRANSPARENT},
+	{(char*)"Oak Planks", DRAW_OPAQUE	  , COLLIDE_SOLID	 ,  0, LIGHT_OPAQUE},
+	{(char*)"Sand"		, DRAW_OPAQUE	  , COLLIDE_SOLID	 ,  0, LIGHT_OPAQUE},
+	{(char*)"Bricks"	, DRAW_OPAQUE	  , COLLIDE_SOLID	 ,  0, LIGHT_OPAQUE},
+	{(char*)"Daisy"		, DRAW_TRANSPARENT, COLLIDE_NONE	 ,  0, LIGHT_TRANSPARENT},
+	{(char*)"Torch"		, DRAW_TRANSPARENT, COLLIDE_NONE	 , 31, LIGHT_TRANSPARENT},
+	{(char*)"Platform"	, DRAW_TRANSPARENT, COLLIDE_PLATFORM ,  0, LIGHT_TRANSPARENT}
 };
 
 float Block::GetSize()
@@ -37,6 +38,7 @@ void Block::LoadImages()
 	blockImages.push_back(agk::LoadImage("bricks.png"));
 	blockImages.push_back(agk::LoadImage("oxeye_daisy.png"));
 	blockImages.push_back(agk::LoadImage("torch.png"));
+	blockImages.push_back(agk::LoadImage("platform.png"));
 
 	backgroundImage = agk::LoadImage("background.png");
 }

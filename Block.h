@@ -18,6 +18,7 @@ typedef enum Collision {
 	COLLIDE_NONE,
 	COLLIDE_SOLID,
 	COLLIDE_CLIMB,
+	COLLIDE_PLATFORM,
 	COLLIDE_LIQUID
 }Collision;
 
@@ -38,6 +39,7 @@ typedef enum ID {
 	Bricks,
 	Daisy,
 	Torch,
+	Platform,
 	Count
 }ID;
 
@@ -67,7 +69,7 @@ class Block {
             LightMode LIGHTMODE;
         };
 
-		static const BlockComponents BlockDefinitions[11];
+		static const BlockComponents BlockDefinitions[12];
 };
 
 #endif
