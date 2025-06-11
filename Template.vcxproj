@@ -237,6 +237,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseStudio|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GrappleHook.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="template.cpp" />
     <ClCompile Include="World.cpp" />
@@ -246,6 +247,7 @@
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="FastNoiseLite.h" />
+    <ClInclude Include="GrappleHook.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ScanCodes.h" />
     <ClInclude Include="template.h" />

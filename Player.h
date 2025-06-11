@@ -3,6 +3,7 @@
 
 #include "World.h"
 #include "Collider.h"
+#include "GrappleHook.h"
 
 class Player {
 	public:
@@ -15,6 +16,9 @@ class Player {
 	private:
 		World* world;
 		Collider* collider;
+		GrappleHook* grappleHook;
+
+		bool doubleJumped = false; // To prevent double jumping
 
 		float x;
 		float y;

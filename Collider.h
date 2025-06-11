@@ -11,10 +11,13 @@ class Collider {
 		float GetX() const;
 		float GetY() const;
 		bool GetOnGround() const;
+		bool GetCollided() const;
 
 		void SetPosition(float x, float y);
 		void SetXSpeed(float speed);
 		void SetYSpeed(float speed);
+		void SetGravity(float gravity);
+		void SetFriction(float friction);
 
 		void Step();
 
@@ -40,6 +43,7 @@ class Collider {
 		float terminalVelocity;
 
 		bool onGround;
+		bool collided;
 
 		bool DetectCollision(Chunk* chunk, std::vector<int>& xCoords, std::vector<int>& yCoords, CollisionAxis axis, int& x, int& y, int dir);
 };

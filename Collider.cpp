@@ -21,10 +21,11 @@ Collider::Collider(World* world, const float width, const float height)
 	ySpeed = 0.0f;
 
 	friction = 0.0f;
-	gravity = 0.25f;
+	gravity = 0.0f;
 	terminalVelocity = 7.5f;
 	
 	onGround = false;
+	collided = false;
 }
 
 Collider::~Collider()
@@ -47,19 +48,34 @@ bool Collider::GetOnGround() const
 	return onGround;
 }
 
-void Collider::SetPosition(float x, float y)
+bool Collider::GetCollided() const
+{
+	return collided;
+}
+
+void Collider::SetPosition(const float x, const float y)
 {
 	this->x = x;
 	this->y = y;
 }
 
-void Collider::SetXSpeed(float speed)
+void Collider::SetXSpeed(const float speed)
 {
 	xSpeed = speed;
 }
-void Collider::SetYSpeed(float speed)
+void Collider::SetYSpeed(const float speed)
 {
 	ySpeed = speed;
+}
+
+void Collider::SetGravity(const float gravity)
+{
+	this->gravity = gravity;
+}
+
+void Collider::SetFriction(const float friction)
+{
+	this->friction = friction;
 }
 
 void Collider::Step()
@@ -94,6 +110,8 @@ void Collider::Step()
 		yCoords[0][i] = (int)floor(((y - (height / 2.0f) + (height / yBlocks) * i) / Block::GetSize()) - (chunk_y * Chunk::GetHeight()));
 
 
+	collided = false;
+
 	//Check x direction   
 	float x_step = 0.1f;
 
@@ -111,6 +129,7 @@ void Collider::Step()
 		{
 			//No longer moving
 			xSpeed = 0.0f;
+			collided = true;
 
 			//Collision Response
 			bool blockSide = (iX / xBlocks) == 0; //Which side of the block did we collide against
@@ -153,6 +172,7 @@ void Collider::Step()
 			
 			//No longer moving
 			ySpeed = 0.0f;
+			collided = true;
 
 			//Collision Response
 			bool blockSide = (iY / yBlocks) == 0; //Which side of the block did we collide against
