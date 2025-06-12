@@ -40,7 +40,7 @@ World::World()
 	agk::ClearScreen();
 	agk::SetRenderToScreen();
 
-	shadowImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
+	shadowImage = agk::CreateRenderImage(agk::GetVirtualWidth() * 2.0, agk::GetVirtualHeight() * 2.0, 0, 0);
 	agk::SetRenderToImage(shadowImage, 0);	//Clear the render image on create
 	agk::ClearScreen();
 	agk::SetRenderToScreen();
@@ -49,6 +49,8 @@ World::World()
 	agk::SetSpritePhysicsOff(worldSprite);	//Don't need built in physics
 
 	worldShader = agk::LoadSpriteShader("World.ps");
+	agk::SetShaderConstantByName(worldShader,"blurSize",2.0,0,0,0);
+
 	agk::SetSpriteShader(worldSprite, worldShader);
 	agk::SetSpriteAdditionalImage(worldSprite, shadowImage, 1);
 }
@@ -77,9 +79,24 @@ World::~World()
 //World tick
 void World::Update()
 {
+	ProcessShaderChanges();
 	ProcessBuildQueue();
 	ProcessChunkTicks();
 	ProcessRenderQueue();
+}
+
+void World::ProcessShaderChanges()
+{
+	if (agk::GetRawKeyState(AGKEY_PLUS))
+		blurSize = blurSize + 0.2;
+
+	if (agk::GetRawKeyState(AGKEY_SUBTRACT))
+		blurSize = blurSize - 0.2;
+
+	std::string s = "Blur Size: " + std::to_string(blurSize) + " (Key: +/-)";
+	agk::Print(s.c_str());
+
+	agk::SetShaderConstantByName(worldShader, "blurSize", blurSize, 0, 0, 0);
 }
 
 void World::ProcessBuildQueue()

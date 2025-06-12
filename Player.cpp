@@ -17,11 +17,13 @@ Player::Player(World* spawn_world, const float spawn_x, const float spawn_y)
 
 	playerImage = agk::LoadImage("player.png");
 	playerSprite = agk::CreateSprite(playerImage);
-	playerShader = agk::LoadSpriteShader("Player.ps");
 	agk::SetSpritePhysicsOff(playerSprite);	//Don't need built in physics
 	agk::SetSpritePosition(playerSprite, x, y);
 	agk::SetSpriteDepth(playerSprite,1);
+
+	playerShader = agk::LoadSpriteShader("Player.ps");
 	agk::SetSpriteShader(playerSprite, playerShader);
+	agk::SetShaderConstantByName(playerSprite, "blurSize", 2.0, 0, 0, 0);
 
 	highlightImage = agk::LoadImage("highlight.png");
 	highlightSprite = agk::CreateSprite(highlightImage);

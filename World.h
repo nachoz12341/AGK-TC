@@ -7,6 +7,8 @@
 #include "Chunk.h"
 #include "FastNoiseLite.h"
 
+#include "ScanCodes.h"
+
 class World {
 	public:
 		World();
@@ -51,11 +53,14 @@ class World {
 		int originX; //Controls which chunk is our center chunk
 		int originY;
 
+		float blurSize = 2.0;
+
 		unsigned int terrainImage;
 		unsigned int shadowImage;
 		unsigned int worldSprite;
-		unsigned int worldShader;
+		unsigned int worldShader;		
 
+		void ProcessShaderChanges();
 		void ProcessBuildQueue();
 		void ProcessRenderQueue();
 		void ProcessChunkTicks();
