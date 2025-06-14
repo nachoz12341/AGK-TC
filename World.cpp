@@ -40,7 +40,7 @@ World::World()
 	agk::ClearScreen();
 	agk::SetRenderToScreen();
 
-	shadowImage = agk::CreateRenderImage(agk::GetVirtualWidth() * 2.0, agk::GetVirtualHeight() * 2.0, 0, 0);
+	shadowImage = agk::CreateRenderImage(agk::GetVirtualWidth(), agk::GetVirtualHeight(), 0, 0);
 	agk::SetRenderToImage(shadowImage, 0);	//Clear the render image on create
 	agk::ClearScreen();
 	agk::SetRenderToScreen();
