@@ -17,6 +17,7 @@
 class app
 {
 	public:
+		float frameTime;
 
 		// constructor
 		app() { memset ( this, 0, sizeof(app)); }

@@ -48,8 +48,8 @@ World::World()
 	worldSprite = agk::CreateSprite(terrainImage);
 	agk::SetSpritePhysicsOff(worldSprite);	//Don't need built in physics
 
-	worldShader = agk::LoadSpriteShader("World.ps");
-	agk::SetShaderConstantByName(worldShader,"blurSize",2.0,0,0,0);
+	worldShader = agk::LoadSpriteShader("World_8.frag");
+	agk::SetShaderConstantByName(worldShader,"blurSize", 3.0,0,0,0);
 
 	agk::SetSpriteShader(worldSprite, worldShader);
 	agk::SetSpriteAdditionalImage(worldSprite, shadowImage, 1);
@@ -77,12 +77,18 @@ World::~World()
 }
 
 //World tick
-void World::Update()
+void World::Update(float frameTime)
 {
+	ProcessLighting(frameTime);
 	ProcessShaderChanges();
 	ProcessBuildQueue();
 	ProcessChunkTicks();
 	ProcessRenderQueue();
+}
+
+void World::ProcessLighting(float frameTime)
+{
+	lighting.Update(frameTime);
 }
 
 void World::ProcessShaderChanges()

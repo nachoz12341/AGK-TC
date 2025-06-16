@@ -40,9 +40,11 @@ int app::Loop (void)
 {
 	agk::Print( agk::ScreenFPS() );
 
+	frameTime = agk::GetFrameTime();
+
 	player->Update();
 	world->SetOriginChunk(World::WorldCoordToChunkX(World::PixelToWorldCoordX(player->GetX())), World::WorldCoordToChunkY(World::PixelToWorldCoordY(player->GetY())));
-	world->Update();
+	world->Update(frameTime);
 	world->Render();
 
 	//Call manually instead of using sync to avoid unnecessary 3d updates
