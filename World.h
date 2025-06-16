@@ -6,6 +6,7 @@
 
 #include "Chunk.h"
 #include "FastNoiseLite.h"
+#include "Lighting.h"
 
 #include "ScanCodes.h"
 
@@ -13,7 +14,7 @@ class World {
 	public:
 		World();
 		~World();
-		void Update();
+		void Update(float timer);
 		Chunk* GetChunk(int x, int y) const;
 		void SetOriginChunk(int x, int y);
 		void SetBlock(int x, int y, BlockID block);
@@ -47,19 +48,22 @@ class World {
 
 		FastNoiseLite noiseGenerator;
 
+		Lighting lighting;
+
 		int WIDTH = 7;	//In chunks
 		int HEIGHT = 7;
 
 		int originX; //Controls which chunk is our center chunk
 		int originY;
 
-		float blurSize = 2.0;
+		float blurSize = 3.0;
 
 		unsigned int terrainImage;
 		unsigned int shadowImage;
 		unsigned int worldSprite;
 		unsigned int worldShader;		
 
+		void ProcessLighting(float timer);
 		void ProcessShaderChanges();
 		void ProcessBuildQueue();
 		void ProcessRenderQueue();
