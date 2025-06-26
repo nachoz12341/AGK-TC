@@ -1,0 +1,3 @@
+[submodule "AGK-Reliable-UDP"]
+	path = AGK-Reliable-UDP
+	url = https://github.com/nachoz12341/AGK-Reliable-UDP.git
