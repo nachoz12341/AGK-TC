@@ -126,3 +126,17 @@ float Player::GetY() const
 {
 	return y;
 }
+
+
+void Player::SyncEncode(std::vector<uint8_t>& outData) const
+{
+}
+
+void Player::SyncDecode(std::vector<uint8_t>& inData)
+{
+
+}
+
+void Player::SyncUpdate()
+{
+}

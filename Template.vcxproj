@@ -253,6 +253,7 @@
     <ClInclude Include="ScanCodes.h" />
     <ClInclude Include="template.h" />
     <ClInclude Include="UDPSync.h" />
+    <ClInclude Include="UDPSyncManager.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>

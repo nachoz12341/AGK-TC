@@ -88,15 +88,15 @@ void World::Update()
 void World::ProcessShaderChanges()
 {
 	if (agk::GetRawKeyState(AGKEY_PLUS))
-		blurSize = blurSize + 0.2;
+		blurSize = blurSize + 0.2f;
 
 	if (agk::GetRawKeyState(AGKEY_SUBTRACT))
-		blurSize = blurSize - 0.2;
+		blurSize = blurSize - 0.2f;
 
 	std::string s = "Blur Size: " + std::to_string(blurSize) + " (Key: +/-)";
 	agk::Print(s.c_str());
 
-	agk::SetShaderConstantByName(worldShader, "blurSize", blurSize, 0, 0, 0);
+	agk::SetShaderConstantByName(worldShader, "blurSize", blurSize, 0.0f, 0.0f, 0.0f);
 }
 
 void World::ProcessBuildQueue()
