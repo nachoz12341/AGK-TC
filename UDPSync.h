@@ -14,7 +14,7 @@ public:
     virtual void SyncEncode(std::vector<uint8_t>& outData) const = 0;
     virtual void SyncDecode(std::vector<uint8_t>& inData) = 0;
     virtual void SyncUpdate() = 0;
-    virtual SyncUUID GetSyncUUID() const {
+    virtual SyncUUID GetUUID() const {
         return syncUUID; // Default implementation
     }
 
