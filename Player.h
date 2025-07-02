@@ -1,11 +1,11 @@
 #ifndef _H_PLAYER
 #define _H_PLAYER
 
-#include "UDPSync.h"
+#include "SyncObj.h"
 #include "World.h"
 #include "Collider.h"
 
-class Player : public UDPSync {
+class Player : public SyncObj {
 	public:
 		Player(World* spawn_world, float spawn_x, float spawn_y);
 		~Player();

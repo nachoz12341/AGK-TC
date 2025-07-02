@@ -1,16 +1,16 @@
-#ifndef _H_UDPSYNC
-#define _H_UDPSYNC
+#ifndef _H_SyncObj
+#define _H_SyncObj
 
 #include <string>
 #include <vector>
 
-#include "AGK-Reliable-UDP/Util.h"
+#include "Util.h"
 
-class UDPSync {
+class SyncObj {
 public:
     typedef std::string SyncUUID;
 
-    virtual ~UDPSync() {}
+    virtual ~SyncObj() {}
     virtual void SyncEncode(std::vector<uint8_t>& outData) const = 0;
     virtual void SyncDecode(std::vector<uint8_t>& inData) = 0;
     virtual void SyncUpdate() = 0;
@@ -21,7 +21,7 @@ public:
 protected:
     SyncUUID syncUUID; // UUID storage for derived classes
     // Constructor to automatically generate a UUID
-    UDPSync() : syncUUID(get_uuid()) {}
+    SyncObj() : syncUUID(get_uuid()) {}
 };
 
 #endif

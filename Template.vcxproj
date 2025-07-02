@@ -240,12 +240,11 @@
     </ClCompile>
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="template.cpp" />
-    <ClCompile Include="UDPSyncManager.cpp" />
+    <ClCompile Include="SyncManager.cpp" />
     <ClCompile Include="World.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AGK-Reliable-UDP\RUDPListener.h" />
-    <ClInclude Include="AGK-Reliable-UDP\Util.h" />
     <ClInclude Include="Block.h" />
     <ClInclude Include="Chunk.h" />
     <ClInclude Include="Collider.h" />
@@ -253,8 +252,8 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="ScanCodes.h" />
     <ClInclude Include="template.h" />
-    <ClInclude Include="UDPSync.h" />
-    <ClInclude Include="UDPSyncManager.h" />
+    <ClInclude Include="SyncObj.h" />
+    <ClInclude Include="SyncManager.h" />
     <ClInclude Include="Util.h" />
     <ClInclude Include="World.h" />
   </ItemGroup>
