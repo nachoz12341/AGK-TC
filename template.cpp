@@ -1,5 +1,6 @@
 // Includes
 #include "template.h"
+#include "Client.h"
 #include "Player.h"
 #include "World.h"
 
@@ -12,6 +13,7 @@ app App;
 
 Player* player;
 World* world;
+Client* client;
 
 void app::Begin(void)
 {
@@ -34,22 +36,36 @@ void app::Begin(void)
 
 	world = new World();
 	player = new Player(world, 1792.0f, 1792.0f);
+	client = new Client("192.168.1.12", 30000);
+	client->RegisterObject(player);
 }
 
 int app::Loop (void)
 {
 	agk::Print( agk::ScreenFPS() );
 
-	player->Update();
-	world->SetOriginChunk(World::WorldCoordToChunkX(World::PixelToWorldCoordX(player->GetX())), World::WorldCoordToChunkY(World::PixelToWorldCoordY(player->GetY())));
-	world->Update();
-	world->Render();
+	if (client->IsConnected())
+	{
+		GameLoop();
+	}
+
+	client->Update();
 
 	//Call manually instead of using sync to avoid unnecessary 3d updates
 	agk::Update2D();
 	agk::Render2DFront();
 	agk::Swap();
 	return 0; // return 1 to close app
+}
+
+int app::GameLoop(void)
+{
+	player->Update();
+	world->SetOriginChunk(World::WorldCoordToChunkX(World::PixelToWorldCoordX(player->GetX())), World::WorldCoordToChunkY(World::PixelToWorldCoordY(player->GetY())));
+	world->Update();
+	world->Render();
+
+	return 0;
 }
 
 

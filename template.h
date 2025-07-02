@@ -16,15 +16,16 @@
 // Global values for the app
 class app
 {
-	public:
+public:
 
-		// constructor
-		app() { memset ( this, 0, sizeof(app)); }
+	// constructor
+	app() { memset(this, 0, sizeof(app)); }
 
-		// main app functions - mike to experiment with a derived class for this..
-		void Begin( void );
-		int Loop( void );
-		void End( void );
+	// main app functions - mike to experiment with a derived class for this..
+	void Begin(void);
+	int Loop(void);
+	void End(void);
+	int GameLoop(void);
 };
 
 extern app App;
