@@ -10,7 +10,7 @@ SyncManager::~SyncManager()
 	syncMap.clear();
 }
 
-void SyncManager::Update()
+void SyncManager::SyncUpdate()
 {
 	//Tick sync update
 	for (auto& pair : syncMap) 
@@ -37,7 +37,7 @@ void SyncManager::RemoveSync(SyncObj::SyncUUID uuid)
 	}
 }
 
-void SyncManager::EncodeSyncData(std::map<SyncObj::SyncUUID, std::vector<uint8_t>>& updateMap)
+void SyncManager::EncodeSyncData(SyncDataMap& updateMap)
 {
 	//Encode for every object we have authority over
 	for (auto& it : syncMap) 
@@ -49,7 +49,7 @@ void SyncManager::EncodeSyncData(std::map<SyncObj::SyncUUID, std::vector<uint8_t
 	}
 }
 
-void SyncManager::DecodeSyncData(std::map<SyncObj::SyncUUID, std::vector<uint8_t>>& updateMap)
+void SyncManager::DecodeSyncData(SyncDataMap& updateMap)
 {
 	
 }
