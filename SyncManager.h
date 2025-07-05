@@ -6,10 +6,11 @@
 
 class SyncManager: public SyncObj {
 public:
-	typedef enum Authority {
+	//Currently sent as uint8_t, but can be changed to int if needed
+	enum Authority {
 		Client,
 		Server
-	}Authority;
+	};
 	
 	typedef std::map<SyncObj::SyncUUID, std::vector<uint8_t>> SyncDataMap; // Map of UUID to sync data
 

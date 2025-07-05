@@ -2,6 +2,7 @@
 #include "agk.h"
 #include <map>
 
+
 Client::Client(const char* address, int port): syncManager(SyncManager::Client), reliableListener("anyip4", port)
 {
 	serverAddress = address;
@@ -78,8 +79,8 @@ void Client::SendRPCData()
 		if (data.empty())
 			continue; // Skip if there is no data to send
 		
-		rpcData.insert(rpcData.end(), uuid.begin(), uuid.end()); // Append the UUID to the rpcData
-		rpcData.insert(rpcData.end(), reinterpret_cast<const uint8_t*>(&dataSize), reinterpret_cast<const uint8_t*>(&dataSize) + sizeof(int));
+		SyncObj::EncodeValue(rpcData, uuid); // Encode the UUID into the rpcData
+		SyncObj::EncodeValue(rpcData, dataSize);
 		rpcData.insert(rpcData.end(), data.begin(), data.end()); // Append the encoded data to the rpcData
 	}
 

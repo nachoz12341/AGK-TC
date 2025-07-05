@@ -29,9 +29,9 @@ void SyncManager::AddSyncObj(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority
 		syncMap.emplace(uuid,SyncStruct(syncObj, auth)); // Add the new SyncObj object
 		
 		std::vector<uint8_t>data;
-		data.insert(data.end(),uuid.begin(), uuid.end());
-		data.insert(data.end(), (uint8_t*)&auth, (uint8_t*)&auth + sizeof(Authority)); // Add authority to the data
-		data.push_back((uint8_t)syncObj->GetSyncObjectID()); // Add the object ID to the data
+		EncodeValue(data, uuid); // Add the authority to the data
+		EncodeValue(data, (uint8_t)auth); // Add the authority to the data
+		EncodeValue(data, (uint8_t)syncObj->GetSyncObjectID()); // Add the object ID to the data
 
 		AddRpc(SyncObj::RpcMessage{ RPC::CREATE_OBJ, data}); // Let others know we deleted the object
 	}
@@ -44,7 +44,9 @@ void SyncManager::RemoveSyncObj(SyncObj::SyncUUID uuid)
 	if (it != syncMap.end()) 
 	{
 		syncMap.erase(it); // Remove from the map
-		AddRpc(SyncObj::RpcMessage{ RPC::DELETE_OBJ, std::vector<uint8_t>(uuid.begin(), uuid.end()) }); // Let others know we deleted the object
+		std::vector<uint8_t>data;
+		EncodeValue(data, uuid); // Add the authority to the data
+		AddRpc(SyncObj::RpcMessage{ RPC::DELETE_OBJ, data }); // Let others know we deleted the object
 	}
 }
 
@@ -133,14 +135,14 @@ void SyncManager::SyncRPCUpdate()
 		{
 			case CREATE_OBJ:
 			{
-				SyncUUID uuid = SyncUUID(rpc.data.begin(), rpc.data.begin() + 36);
-				rpc.data.erase(rpc.data.begin(), rpc.data.begin() + 36); // Remove the uuid from the data
+				SyncUUID uuid;
+				DecodeValue(rpc.data,uuid);
 
-				Authority auth = static_cast<Authority>(rpc.data[0]); // Get the authority from the first byte of data
-				rpc.data.erase(rpc.data.begin()); // Remove the authority byte from the data
+				Authority auth;	//Get the authority byte from the data
+				DecodeValue(rpc.data, auth); 
 
-				SyncObjectID objID = static_cast<SyncObjectID>(rpc.data[0]); // Get the object ID from the first byte of data
-				rpc.data.erase(rpc.data.begin()); // Remove the object ID byte from the data
+				SyncObjectID objID; // Get the object ID from the first byte of data
+				DecodeValue(rpc.data, objID); 
 
 				SyncObj* syncObj = nullptr;
 

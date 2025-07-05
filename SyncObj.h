@@ -103,6 +103,36 @@ public:
     void SetUUID(const SyncUUID& uuid) {
         syncUUID = uuid; // Set the UUID for the sync object
     };
+
+    template<typename T>
+    static void EncodeValue(std::vector<uint8_t>& data, const T& value)
+    {
+        static_assert(std::is_fundamental<T>::value || std::is_enum<T>::value, "EncodeValue only supports fundamental types");
+        const uint8_t* dataPtr = reinterpret_cast<const uint8_t*>(&value);
+        data.insert(data.end(), dataPtr, dataPtr + sizeof(T));
+    }
+
+    static void EncodeValue(std::vector<uint8_t>& data, const SyncUUID value)
+    {
+        data.insert(data.end(), value.begin(), value.end()); // Append the string to the data
+    }
+
+	template<typename T>
+    static void DecodeValue(std::vector<uint8_t>& data, T& value)
+    {
+        static_assert(std::is_fundamental<T>::value || std::is_enum<T>::value, "DecodeValue only supports fundamental types");
+        if (sizeof(T) > data.size())
+            return; // If not enough data, do nothing
+        std::memcpy(&value, data.data(), sizeof(T));
+		data.erase(data.begin(), data.begin() + sizeof(T)); // Remove the decoded value from the data
+	}
+
+    static void DecodeValue(std::vector<uint8_t>& data, SyncUUID value)
+    {
+        value = SyncUUID(data.begin(), data.begin() + 36);
+        data.erase(data.begin(), data.begin() + 36); // Remove the uuid from the data
+    }
+
 protected:
     SyncUUID syncUUID; // UUID storage for derived classes
     std::queue<RpcMessage> outRpcQueue; // Queue for pending RPCs
