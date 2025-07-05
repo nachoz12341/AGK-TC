@@ -4,7 +4,7 @@
 #include <map>
 #include "SyncObj.h"
 
-class SyncManager {
+class SyncManager: public SyncObj {
 public:
 	typedef enum Authority {
 		Client,
@@ -15,13 +15,19 @@ public:
 
 	SyncManager(Authority auth);
 	~SyncManager();
-	void SyncUpdate();	//Ticks all sync updates
-	void AddSync(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority auth);
-	void RemoveSync(SyncObj::SyncUUID uuid);
+	void Update();	//Ticks all sync updates
 
-	void EncodeSyncData(SyncDataMap& updateMap); // Function to encode sync data for owned objects
-	void DecodeSyncData(SyncDataMap& updateMap); // Function to decode sync data received from the network
+	void AddSyncObj(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority auth);
+	void RemoveSyncObj(SyncObj::SyncUUID uuid);
 
+	void EncodeRPCMap(SyncDataMap& updateMap); // Function to encode sync data for owned objects
+	void DecodeRPCMap(SyncDataMap& updateMap); // Function to decode sync data received from the network
+
+	void EncodeFastSyncMap(SyncDataMap& updateMap); // Function to encode sync data for owned objects
+	void DecodeFastSyncMap(SyncDataMap& updateMap); // Function to decode sync data received from the network
+
+	/// Decodes rpcs for sync manager specific messages
+	void SyncRPCUpdate() override;
 private:
 	typedef struct SyncStruct {
 		SyncObj* syncObj;
@@ -30,6 +36,11 @@ private:
 
 		}
 	} SyncStruct;
+
+	enum RPC {
+		CREATE_OBJ,
+		DELETE_OBJ
+	};
 
 	typedef std::map<SyncObj::SyncUUID, SyncStruct> SyncMap;
 	SyncMap syncMap; // Map of UUID to SyncObj objects

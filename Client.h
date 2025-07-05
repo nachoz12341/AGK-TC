@@ -23,6 +23,9 @@ class Client {
 		RUDPListener reliableListener;		//Reliable UDP listener for network communication
 		RUDPListener::ConnectionUUID serverUUID; // UUID of the connection to the server
 		unsigned int fastListener;
+
+		void SendRPCData();
+		void SendFastData();
 };
 
 #endif

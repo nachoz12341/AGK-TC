@@ -14,9 +14,10 @@ class Player : public SyncObj {
 		float GetY() const;
 
 		//UDP Sync Interface
-		void SyncEncode(std::vector<uint8_t>& outData) const override;
-		void SyncDecode(std::vector<uint8_t>& inData) override;
-		void SyncUpdate() override;
+		void SyncFastEncode(std::vector<uint8_t>& outData) const override;
+		void SyncFastDecode(std::vector<uint8_t>& inData) override;
+		void SyncFastUpdate() override;
+		void SyncRPCUpdate() override;
 
 	private:
 		World* world;
