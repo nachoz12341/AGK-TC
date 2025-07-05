@@ -127,6 +127,10 @@ float Player::GetY() const
 	return y;
 }
 
+SyncObj::SyncObjectID Player::GetSyncObjectID() const {
+	return SyncObj::PLAYER; // Default implementation
+};
+
 void Player::SyncRPCUpdate()
 {
 
@@ -134,11 +138,16 @@ void Player::SyncRPCUpdate()
 
 void Player::SyncFastEncode(std::vector<uint8_t>& outData) const
 {
+
+	outData.insert(outData.end(), reinterpret_cast<const uint8_t*>(&x), reinterpret_cast<const uint8_t*>(&x) + sizeof(float));
+	outData.insert(outData.end(), reinterpret_cast<const uint8_t*>(&y), reinterpret_cast<const uint8_t*>(&y) + sizeof(float));
 }
 
 void Player::SyncFastDecode(std::vector<uint8_t>& inData)
 {
-
+	std::memcpy(&x, inData.data(), sizeof(float)); // Copy the x position from the data
+	inData.erase(inData.begin(), inData.begin() + sizeof(float)); // Remove the x position from the data
+	std::memcpy(&y, inData.data(), sizeof(float)); // Copy the y position from the data
 }
 
 void Player::SyncFastUpdate()

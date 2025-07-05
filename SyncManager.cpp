@@ -1,5 +1,7 @@
 #include "SyncManager.h"
 
+#include "Player.h"
+
 SyncManager::SyncManager(Authority auth) 
 {
 	authority = auth;
@@ -25,6 +27,13 @@ void SyncManager::AddSyncObj(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority
 	if (syncMap.find(uuid) == syncMap.end()) 
 	{
 		syncMap.emplace(uuid,SyncStruct(syncObj, auth)); // Add the new SyncObj object
+		
+		std::vector<uint8_t>data;
+		data.insert(data.end(),uuid.begin(), uuid.end());
+		data.insert(data.end(), (uint8_t*)&auth, (uint8_t*)&auth + sizeof(Authority)); // Add authority to the data
+		data.push_back((uint8_t)syncObj->GetSyncObjectID()); // Add the object ID to the data
+
+		AddRpc(SyncObj::RpcMessage{ RPC::CREATE_OBJ, data}); // Let others know we deleted the object
 	}
 }
 
@@ -35,6 +44,7 @@ void SyncManager::RemoveSyncObj(SyncObj::SyncUUID uuid)
 	if (it != syncMap.end()) 
 	{
 		syncMap.erase(it); // Remove from the map
+		AddRpc(SyncObj::RpcMessage{ RPC::DELETE_OBJ, std::vector<uint8_t>(uuid.begin(), uuid.end()) }); // Let others know we deleted the object
 	}
 }
 
@@ -123,11 +133,39 @@ void SyncManager::SyncRPCUpdate()
 		{
 			case CREATE_OBJ:
 			{
+				SyncUUID uuid = SyncUUID(rpc.data.begin(), rpc.data.begin() + 36);
+				rpc.data.erase(rpc.data.begin(), rpc.data.begin() + 36); // Remove the uuid from the data
+
+				Authority auth = static_cast<Authority>(rpc.data[0]); // Get the authority from the first byte of data
+				rpc.data.erase(rpc.data.begin()); // Remove the authority byte from the data
+
+				SyncObjectID objID = static_cast<SyncObjectID>(rpc.data[0]); // Get the object ID from the first byte of data
+				rpc.data.erase(rpc.data.begin()); // Remove the object ID byte from the data
+
+				SyncObj* syncObj = nullptr;
+
+				switch(objID)
+				{
+					case SyncObjectID::PLAYER:
+					{
+						syncObj = new Player(nullptr, 0.0f, 0.0f); // Create a new Player object
+						syncObj->SetUUID(uuid); // Set the UUID for the player
+						break;
+					}
+
+					default:
+					{
+						break;
+					}
+				}
+
+				syncMap.emplace(uuid, SyncStruct(syncObj, auth)); // Add the new SyncObj object
 				break;
 			}
 
 			case DELETE_OBJ:
 			{
+				RemoveSyncObj(SyncUUID(rpc.data.begin(), rpc.data.end())); // Remove the sync object from the map
 				break;
 			}
 		}

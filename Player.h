@@ -18,6 +18,7 @@ class Player : public SyncObj {
 		void SyncFastDecode(std::vector<uint8_t>& inData) override;
 		void SyncFastUpdate() override;
 		void SyncRPCUpdate() override;
+		SyncObjectID GetSyncObjectID() const override;
 
 	private:
 		World* world;

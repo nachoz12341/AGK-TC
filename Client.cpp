@@ -44,6 +44,8 @@ void Client::Update()
 		SendFastData();
 
 		//Receive data
+		ReceiveRPCData();
+		ReceiveFastData();
 	}
 
 	syncManager.Update(); 
@@ -71,11 +73,13 @@ void Client::SendRPCData()
 	{
 		SyncObj::SyncUUID uuid = it.first; // Get the UUID of the sync object
 		std::vector<uint8_t>& data = it.second; // Get the encoded data for the sync object
+		int dataSize = (int)data.size(); // Get the size of the encoded data
 		
 		if (data.empty())
 			continue; // Skip if there is no data to send
 		
-		rpcData.insert(rpcData.end(), reinterpret_cast<const uint8_t*>(&uuid), reinterpret_cast<const uint8_t*>(&uuid) + sizeof(SyncObj::SyncUUID)); // Append the UUID to the rpcData
+		rpcData.insert(rpcData.end(), uuid.begin(), uuid.end()); // Append the UUID to the rpcData
+		rpcData.insert(rpcData.end(), reinterpret_cast<const uint8_t*>(&dataSize), reinterpret_cast<const uint8_t*>(&dataSize) + sizeof(int));
 		rpcData.insert(rpcData.end(), data.begin(), data.end()); // Append the encoded data to the rpcData
 	}
 
@@ -96,6 +100,17 @@ void Client::SendFastData()
 	syncManager.EncodeFastSyncMap(fastUpdateMap); // Encode sync data for the connection
 
 	unsigned int message = agk::CreateNetworkMessage();
+	int updateCount = 0;
+
+	for (auto& it : fastUpdateMap)
+	{
+		SyncObj::SyncUUID uuid = it.first; // Get the UUID of the sync object
+		std::vector<uint8_t>& data = it.second; // Get the encoded data for the sync object
+
+		if (!data.empty())
+			updateCount++;
+	}
+	agk::AddNetworkMessageInteger(message, updateCount); // Add the number of obj updates to the network message
 
 	for (auto& it : fastUpdateMap)
 	{
@@ -114,5 +129,67 @@ void Client::SendFastData()
 		}
 	}
 
-	agk::SendUDPNetworkMessage(fastListener, message, serverAddress, serverPort); // Send the network message to the server
+	agk::SendUDPNetworkMessage(fastListener, message, serverAddress, serverPort+1); // Send the network message to the server
+}
+
+void Client::ReceiveRPCData()
+{
+	int message = reliableListener.GetMessage(serverUUID); // Get the message from the reliable listener
+	
+	while (message != -1)
+	{
+		SyncManager::SyncDataMap rpcUpdateMap;
+
+		int ind = 0;
+		while (ind < agk::GetMemblockSize(message))
+		{
+			SyncObj::SyncUUID uuid = agk::GetMemblockString(message, ind, 36); // Get the UUID from the message
+			int dataSize = agk::GetMemblockInt(message, ind +36);
+			ind += 40; // Move the index past the UUID and data size
+			std::vector<uint8_t> data;
+
+			for (int i = 0; i < dataSize; i++)
+			{
+				data.push_back(agk::GetMemblockByte(message, ind + i)); // Extract the data from the message
+				ind++; // Increment the index
+			}
+			rpcUpdateMap.insert(std::make_pair(uuid, data));
+		}
+		
+
+		syncManager.DecodeRPCMap(rpcUpdateMap); // Decode the received RPC data into the sync manager
+		message = reliableListener.GetMessage(serverUUID); // Get the next message
+	}
+}
+
+void Client::ReceiveFastData()
+{
+	//Receive fast data from the fast listener
+	unsigned int message = agk::GetUDPNetworkMessage(fastListener);
+
+	while (message != 0)
+	{
+		SyncManager::SyncDataMap fastUpdateMap;
+		int ind = 0;
+		int updateCount = agk::GetNetworkMessageInteger(message); // Get the number of updates from the message
+
+		while (ind < updateCount)
+		{
+			SyncObj::SyncUUID uuid = agk::GetNetworkMessageString(message); // Get the UUID from the message
+			int dataSize = agk::GetNetworkMessageInteger(message);
+			std::vector<uint8_t> data; // Create a vector to hold the data
+
+			for (int i = 0; i < dataSize; i++)
+			{
+				data.push_back(agk::GetNetworkMessageByte(message)); // Extract the data from the message
+			}
+
+			agk::DeleteNetworkMessage(message); // Delete the message to free memory
+			fastUpdateMap.insert(std::make_pair(uuid, data));
+			ind++;
+		}
+
+		syncManager.DecodeFastSyncMap(fastUpdateMap); // Decode the received fast sync data into the sync manager
+		message = agk::GetUDPNetworkMessage(fastListener); // Get the next message
+	}
 }

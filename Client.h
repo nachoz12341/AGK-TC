@@ -26,6 +26,9 @@ class Client {
 
 		void SendRPCData();
 		void SendFastData();
+
+		void ReceiveRPCData();
+		void ReceiveFastData();
 };
 
 #endif

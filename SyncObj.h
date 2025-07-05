@@ -16,6 +16,12 @@ public:
         std::vector<uint8_t> data;
     };
 
+	//Currently sending as uint8_t, but can be changed to int if needed
+    enum SyncObjectID {
+        DEFAULT,
+        PLAYER,
+    };
+
     virtual ~SyncObj() {};
     virtual void SyncFastUpdate() {};
     virtual void SyncFastEncode(std::vector<uint8_t>& outData) const {};
@@ -26,6 +32,10 @@ public:
     virtual SyncUUID GetUUID() const {
         return syncUUID; // Default implementation
     };
+
+    virtual SyncObjectID GetSyncObjectID() const {
+        return SyncObj::DEFAULT; // Default implementation
+	};
 
     virtual void AddRpc(const RpcMessage& rpc) {
         outRpcQueue.push(rpc);
@@ -90,6 +100,9 @@ public:
         }
     };
 
+    void SetUUID(const SyncUUID& uuid) {
+        syncUUID = uuid; // Set the UUID for the sync object
+    };
 protected:
     SyncUUID syncUUID; // UUID storage for derived classes
     std::queue<RpcMessage> outRpcQueue; // Queue for pending RPCs
