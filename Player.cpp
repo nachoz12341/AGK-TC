@@ -138,16 +138,19 @@ void Player::SyncRPCUpdate()
 
 void Player::SyncFastEncode(std::vector<uint8_t>& outData) const
 {
-	EncodeValue(outData, x); // Encode the x position
-	EncodeValue(outData, y); // Encode the x position
+	EncodeValue(outData, x);
+	EncodeValue(outData, y); 
 }
 
 void Player::SyncFastDecode(std::vector<uint8_t>& inData)
 {
-	DecodeValue<float>(inData, x); // Decode the x position
-	DecodeValue<float>(inData, y); // Decode the x position
+	DecodeValue(inData, targetX); 
+	DecodeValue(inData, targetY); 
 }
 
+// Smoothly interpolate the player's position towards the target position
 void Player::SyncFastUpdate()
 {
+	x = Lerp(x, targetX, 0.5f);
+	y = Lerp(y, targetY, 0.5f);
 }

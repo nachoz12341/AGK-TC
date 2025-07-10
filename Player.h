@@ -32,7 +32,11 @@ class Player : public SyncObj {
 		unsigned int playerShader;
 
 		unsigned int highlightImage;
-		unsigned int highlightSprite;		
+		unsigned int highlightSprite;
+
+		//Online sync
+		float targetX = 0.0f;
+		float targetY = 0.0f;
 };
 
 #endif 

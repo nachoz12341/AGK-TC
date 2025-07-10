@@ -240,6 +240,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="template.cpp" />
     <ClCompile Include="SyncManager.cpp" />
     <ClCompile Include="World.cpp" />
@@ -253,6 +254,7 @@
     <ClInclude Include="FastNoiseLite.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="ScanCodes.h" />
+    <ClInclude Include="Server.h" />
     <ClInclude Include="template.h" />
     <ClInclude Include="SyncObj.h" />
     <ClInclude Include="SyncManager.h" />
