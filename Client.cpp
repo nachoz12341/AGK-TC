@@ -3,7 +3,7 @@
 #include <map>
 
 
-Client::Client(const char* address, int port): syncManager(SyncManager::Client), reliableListener("anyip4", port)
+Client::Client(const char* address, int port): reliableListener("anyip4", port), syncManager(SyncManager::Client, reliableListener.GetListenerUUID())
 {
 	serverAddress = address;
 	serverPort = port;
@@ -54,7 +54,7 @@ void Client::Update()
 
 void Client::RegisterObject(SyncObj* syncObj)
 {
-	syncManager.AddSyncObj(syncObj->GetUUID(), syncObj, SyncManager::Client); // Register the sync object with the sync manager
+	syncManager.AddSyncObj(syncObj->GetUUID(), syncObj, SyncManager::Client, reliableListener.GetListenerUUID()); // Register the sync object with the sync manager
 }
 
 bool Client::IsConnected() const

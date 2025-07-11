@@ -112,8 +112,9 @@ public:
         data.insert(data.end(), dataPtr, dataPtr + sizeof(T));
     }
 
-    static void EncodeValue(std::vector<uint8_t>& data, const SyncUUID value)
+    static void EncodeValue(std::vector<uint8_t>& data, const std::string value)
     {
+        EncodeValue(data, value.size());
         data.insert(data.end(), value.begin(), value.end()); // Append the string to the data
     }
 
@@ -129,8 +130,10 @@ public:
 
     static void DecodeValue(std::vector<uint8_t>& data, SyncUUID value)
     {
-        value = SyncUUID(data.begin(), data.begin() + 36);
-        data.erase(data.begin(), data.begin() + 36); // Remove the uuid from the data
+        int size = 0;
+        DecodeValue(data, size);
+        value = SyncUUID(data.begin(), data.begin() + size);
+        data.erase(data.begin(), data.begin() + size); // Remove the uuid from the data
     }
 
 protected:

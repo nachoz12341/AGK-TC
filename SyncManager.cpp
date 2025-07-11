@@ -2,10 +2,10 @@
 
 #include "Player.h"
 
-SyncManager::SyncManager(Authority auth) 
+SyncManager::SyncManager(Authority auth, RUDPListener::ConnectionUUID ownerUUID)
 {
 	authority = auth;
-	syncMap.emplace(GetUUID(), SyncStruct(this, auth)); //Add manager to the sync map so it can sync object creation and deletion
+	syncMap.emplace(GetUUID(), SyncStruct(this, auth, ownerUUID)); //Add manager to the sync map so it can sync object creation and deletion
 }
 
 SyncManager::~SyncManager()
@@ -22,16 +22,17 @@ void SyncManager::Update()
 	}
 }
 
-void SyncManager::AddSyncObj(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority auth)
+void SyncManager::AddSyncObj(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority auth, RUDPListener::ConnectionUUID owningConnection)
 {
 	if (syncMap.find(uuid) == syncMap.end()) 
 	{
-		syncMap.emplace(uuid,SyncStruct(syncObj, auth)); // Add the new SyncObj object
-		
+		syncMap.emplace(uuid,SyncStruct(syncObj, auth, owningConnection)); // Add the new SyncObj object
+
 		std::vector<uint8_t>data;
 		EncodeValue(data, uuid); // Add the authority to the data
 		EncodeValue(data, (uint8_t)auth); // Add the authority to the data
 		EncodeValue(data, (uint8_t)syncObj->GetSyncObjectID()); // Add the object ID to the data
+		EncodeValue(data, std::string(owningConnection));
 
 		AddRpc(SyncObj::RpcMessage{ RPC::CREATE_OBJ, data}); // Let others know we deleted the object
 	}
@@ -40,14 +41,27 @@ void SyncManager::AddSyncObj(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority
 void SyncManager::RemoveSyncObj(SyncObj::SyncUUID uuid)
 {
 	auto it = syncMap.find(uuid);
-	
-	if (it != syncMap.end()) 
+
+	if (it != syncMap.end())
 	{
 		syncMap.erase(it); // Remove from the map
 		std::vector<uint8_t>data;
 		EncodeValue(data, uuid); // Add the authority to the data
 		AddRpc(SyncObj::RpcMessage{ RPC::DELETE_OBJ, data }); // Let others know we deleted the object
 	}
+}
+
+RUDPListener::ConnectionUUID SyncManager::GetOwningConnection(const SyncObj::SyncUUID uuid) const
+{
+	auto it = syncMap.find(uuid);
+	RUDPListener::ConnectionUUID ownerUUID = nullptr;
+
+	if(it!=syncMap.end())
+	{
+		ownerUUID = it->second.ownerUUID;
+	}
+
+	return ownerUUID;
 }
 
 /*
@@ -144,6 +158,11 @@ void SyncManager::SyncRPCUpdate()
 				SyncObjectID objID; // Get the object ID from the first byte of data
 				DecodeValue(rpc.data, objID); 
 
+				RUDPListener::ConnectionUUID owningUUID = new char[37];
+				std::string uuidString;
+				DecodeValue(rpc.data, uuidString);
+				std::strcpy(owningUUID, uuidString.c_str());
+
 				SyncObj* syncObj = nullptr;
 
 				switch(objID)
@@ -161,7 +180,7 @@ void SyncManager::SyncRPCUpdate()
 					}
 				}
 
-				syncMap.emplace(uuid, SyncStruct(syncObj, auth)); // Add the new SyncObj object
+				syncMap.emplace(uuid, SyncStruct(syncObj, auth, owningUUID)); // Add the new SyncObj object
 				break;
 			}
 

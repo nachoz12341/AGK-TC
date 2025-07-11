@@ -7,12 +7,10 @@
 
 class Server {
 	public:
-		Server(const char* address, int port);
+		Server();
 		~Server();
 		void Update();
 	private:
-		unsigned int serverPort;
-		const char* serverAddress;
 		unsigned int fastListener;
 		RUDPListener reliableListener;
 		SyncManager syncManager;	

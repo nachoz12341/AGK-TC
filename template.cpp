@@ -2,6 +2,7 @@
 #include "template.h"
 #include "Client.h"
 #include "Player.h"
+#include "Server.h"
 #include "World.h"
 
 #include <cmath>
@@ -14,6 +15,7 @@ app App;
 Player* player;
 World* world;
 Client* client;
+Server* server;
 
 void app::Begin(void)
 {
@@ -38,6 +40,7 @@ void app::Begin(void)
 	player = new Player(world, 1792.0f, 1792.0f);
 	client = new Client("192.168.1.12", 30000);
 	client->RegisterObject(player);
+	//server = new Server();
 }
 
 int app::Loop (void)
@@ -50,6 +53,8 @@ int app::Loop (void)
 	}
 
 	client->Update();
+
+	//server->Update(); // Update the server to handle incoming connections and messages
 
 	//Call manually instead of using sync to avoid unnecessary 3d updates
 	agk::Update2D();

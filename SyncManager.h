@@ -3,6 +3,7 @@
 
 #include <map>
 #include "SyncObj.h"
+#include "AGK-Reliable-UDP/RUDPListener.h"
 
 class SyncManager: public SyncObj {
 public:
@@ -14,12 +15,13 @@ public:
 	
 	typedef std::map<SyncObj::SyncUUID, std::vector<uint8_t>> SyncDataMap; // Map of UUID to sync data
 
-	SyncManager(Authority auth);
+	SyncManager(Authority auth, RUDPListener::ConnectionUUID ownerUUID);
 	~SyncManager();
 	void Update();	//Ticks all sync updates
 
-	void AddSyncObj(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority auth);
+	void AddSyncObj(SyncObj::SyncUUID uuid, SyncObj* syncObj, Authority auth, RUDPListener::ConnectionUUID owningConnection);
 	void RemoveSyncObj(SyncObj::SyncUUID uuid);
+	RUDPListener::ConnectionUUID GetOwningConnection(SyncObj::SyncUUID uuid) const;
 
 	void EncodeRPCMap(SyncDataMap& updateMap); // Function to encode sync data for owned objects
 	void DecodeRPCMap(SyncDataMap& updateMap); // Function to decode sync data received from the network
@@ -33,7 +35,8 @@ private:
 	typedef struct SyncStruct {
 		SyncObj* syncObj;
 		Authority authority; // Authority of the obj
-		SyncStruct(SyncObj* _syncObj, Authority _auth) : syncObj(_syncObj), authority(_auth) {
+		RUDPListener::ConnectionUUID ownerUUID; // Connection UUID of the owner
+		SyncStruct(SyncObj* _syncObj, Authority _auth, RUDPListener::ConnectionUUID _ownerUUID) : syncObj(_syncObj), authority(_auth), ownerUUID(_ownerUUID) {
 
 		}
 	} SyncStruct;
